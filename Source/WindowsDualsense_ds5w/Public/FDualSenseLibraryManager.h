@@ -113,7 +113,7 @@ public:
 
 		if (DualSenseHIDManager HIDManager; !HIDManager.FindDevices(DetectedDevices) || DetectedDevices.Num() == 0)
 		{
-			UE_LOG(LogTemp, Error, TEXT("DualSense: device not found. Creating default library instance."));
+			UE_LOG(LogTemp, Log, TEXT("DualSense: device not found. Creating default library instance."));
 			return;
 		}
 
@@ -165,7 +165,7 @@ private:
 		
 		if (DualSenseHIDManager HIDManager; !HIDManager.FindDevices(DetectedDevices) || DetectedDevices.Num() == 0)
 		{
-			UE_LOG(LogTemp, Error, TEXT("DualSense: device not found. Creating default library instance."));
+			UE_LOG(LogTemp, Log, TEXT("DualSense: device not found. Creating default library instance."));
 			return nullptr;
 		}
 
