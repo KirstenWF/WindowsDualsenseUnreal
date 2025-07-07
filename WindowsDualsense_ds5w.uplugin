@@ -12,10 +12,9 @@
 	"IsExperimentalVersion": false,
 	"CanContainContent": false,
 	"IsBetaVersion": false,
-	"Installed": true,
-	"EnabledByDefault": false,
+	"Installed": false,
+	"EnabledByDefault": true,
 	"RequiresBuildPlatform": true,
-	"EngineVersion": "5.2.0",
 	"Modules": [
 		{
 			"Name": "WindowsDualsense_ds5w",
