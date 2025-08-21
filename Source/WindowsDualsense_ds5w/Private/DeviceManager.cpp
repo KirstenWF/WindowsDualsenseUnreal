@@ -19,12 +19,15 @@ DeviceManager::DeviceManager(const TSharedRef<FGenericApplicationMessageHandler>
 	DeviceMapper = FWindowsPlatformApplicationMisc::CreatePlatformInputDeviceManager();
 	DeviceMapper->Get().GetOnInputDeviceConnectionChange().AddRaw(this, &DeviceManager::OnConnectionChange);
 	FCoreDelegates::OnUserLoginChangedEvent.AddRaw(this, &DeviceManager::OnUserLoginChangedEvent);
+	
+	DeviceMapper->Get().GetOnInputDevicePairingChange().AddRaw(this, &DeviceManager::OnChangedMyEvent);
 }
 
 DeviceManager::~DeviceManager()
 {
 	FCoreDelegates::OnUserLoginChangedEvent.RemoveAll(this);
 	DeviceMapper->Get().GetOnInputDeviceConnectionChange().RemoveAll(this);
+	DeviceMapper->Get().GetOnInputDevicePairingChange().RemoveAll(this);
 }
 
 void DeviceManager::Tick(float DeltaTime)
@@ -190,12 +193,28 @@ void DeviceManager::OnConnectionChange(EInputDeviceConnectionState Connected, FP
 	}
 }
 
+bool bIsBloking = false;
+void DeviceManager::OnChangedMyEvent(FInputDeviceId ControllerId, FPlatformUserId NewUser, FPlatformUserId OldUer)
+{
+	if (bIsBloking)
+	{
+		return;
+	}
+	
+	bIsBloking = true;
+	DeviceMapper->Get().Internal_ChangeInputDeviceUserMapping(ControllerId, NewUser, OldUer);
+	// DeviceMapper->Get().Internal_MapInputDeviceToUser(ControllerId, NewUser, EInputDeviceConnectionState::Connected);
+	bIsBloking = false;
+}
 void DeviceManager::OnUserLoginChangedEvent(bool bLoggedIn, int32 UserId, int32 UserIndex) const
 {
 	if (!bLoggedIn) return;
 
-	const FInputDeviceId& Device = FInputDeviceId::CreateFromInternalId(UserId);
-	const FPlatformUserId& User = FPlatformMisc::GetPlatformUserForUserIndex(UserIndex);
+	FInputDeviceId Device = FInputDeviceId::CreateFromInternalId(UserId);
+	FPlatformUserId User = FPlatformMisc::GetPlatformUserForUserIndex(UserIndex);
+
+	
+	
 	if (const FPlatformUserId& UserPair = DeviceMapper->Get().GetUserForInputDevice(Device); UserPair != User)
 	{
 		if (DeviceMapper->Get().GetInputDeviceConnectionState(Device) != EInputDeviceConnectionState::Connected)

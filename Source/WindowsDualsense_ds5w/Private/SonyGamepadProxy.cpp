@@ -4,8 +4,17 @@
 
 
 #include "SonyGamepadProxy.h"
-
 #include "Core/DeviceContainerManager.h"
+
+
+
+void USonyGamepadProxy::RemapControllerIdToUser(int32 ControllerId, int32 NewUser, int32 OldUser)
+{
+	FPlatformUserId UserOld = FPlatformUserId::CreateFromInternalId(OldUser);
+	FPlatformUserId UserNew = FPlatformUserId::CreateFromInternalId(NewUser);
+	FInputDeviceId Device = FInputDeviceId::CreateFromInternalId(ControllerId);
+	PlatformInputDeviceMapper.Get().GetOnInputDevicePairingChange().Broadcast(Device, UserNew, UserOld);
+}
 
 bool USonyGamepadProxy::DeviceIsConnected(int32 ControllerId)
 {

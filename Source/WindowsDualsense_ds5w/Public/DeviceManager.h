@@ -135,6 +135,7 @@ public:
 	 * @param UserIndex Index of the user
 	 */
 	void OnUserLoginChangedEvent(bool bLoggedIn, int32 UserId, int32 UserIndex) const;
+	void OnChangedMyEvent(FInputDeviceId ControllerId, FPlatformUserId NewUser, FPlatformUserId OldUer);
 	/**
 	 * Handles controller connection state changes
 	 * @param Connected New connection state
