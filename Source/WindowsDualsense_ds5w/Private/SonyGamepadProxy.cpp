@@ -4,17 +4,41 @@
 
 
 #include "SonyGamepadProxy.h"
+
+#include "DeviceSettings.h"
 #include "Core/DeviceContainerManager.h"
 
 
+class UDeviceSettings;
 
-void USonyGamepadProxy::RemapControllerIdToUser(int32 ControllerId, int32 NewUser, int32 OldUser)
-{
-	FPlatformUserId UserOld = FPlatformUserId::CreateFromInternalId(OldUser);
-	FPlatformUserId UserNew = FPlatformUserId::CreateFromInternalId(NewUser);
-	FInputDeviceId Device = FInputDeviceId::CreateFromInternalId(ControllerId);
-	PlatformInputDeviceMapper.Get().GetOnInputDevicePairingChange().Broadcast(Device, UserNew, UserOld);
-}
+// void USonyGamepadProxy::RemapControllerIdToUser(int32 ControllerId, int32 NewUser)
+// {
+// 	if (UDeviceSettings* Settings = NewObject<UDeviceSettings>())
+// 	{
+// 		switch (NewUser)
+// 		{
+// 		case 0:
+// 			Settings->SonyGamepadOne.DeviceId = ControllerId;
+// 			break;
+// 		case 1:
+// 			Settings->SonyGamepadTwo.DeviceId = ControllerId;
+// 			break;
+// 		case 2:
+// 			Settings->SonyGamepadThree.DeviceId = ControllerId;
+// 			break;
+// 		case 3:
+// 			Settings->SonyGamepadFour.DeviceId = ControllerId;
+// 			break;
+// 		default:
+// 			break;
+// 		}
+// 	}
+// 	
+// 	PlatformInputDeviceMapper.Get().GetOnInputDevicePairingChange().Broadcast(
+// 		FInputDeviceId::CreateFromInternalId(ControllerId),
+// 		FPlatformUserId::CreateFromInternalId(NewUser),
+// 		FPlatformUserId::CreateFromInternalId(UDeviceContainerManager::Get()->GetLibraryInstance(ControllerId)->GetUserId()));
+// }
 
 bool USonyGamepadProxy::DeviceIsConnected(int32 ControllerId)
 {
@@ -23,6 +47,11 @@ bool USonyGamepadProxy::DeviceIsConnected(int32 ControllerId)
 		return false;
 	}
 
+	PlatformInputDeviceMapper.Get().GetOnInputDeviceConnectionChange().Broadcast(
+		EInputDeviceConnectionState::Connected,
+		FPlatformUserId::CreateFromInternalId(UDeviceContainerManager::ToMap(ControllerId)),
+		FInputDeviceId::CreateFromInternalId(UDeviceContainerManager::ToMap(ControllerId))
+	);
 	return true;
 }
 
@@ -60,7 +89,7 @@ bool USonyGamepadProxy::DeviceReconnect(int32 ControllerId)
 
 bool USonyGamepadProxy::DeviceDisconnect(int32 ControllerId)
 {
-	UDeviceContainerManager::Get()->RemoveLibraryInstance(ControllerId);
+	UDeviceContainerManager::Get()->RemoveLibraryInstance(UDeviceContainerManager::ToMap(ControllerId));
 	return true;
 }
 

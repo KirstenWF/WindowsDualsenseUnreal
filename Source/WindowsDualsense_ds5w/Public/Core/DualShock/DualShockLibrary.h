@@ -32,6 +32,36 @@ public:
 	 */
 	virtual void Settings(const FSettings<FFeatureReport>& Settings) override;
 	virtual void Settings(const FDualShockFeatureReport& Settings);
+	
+	FPlatformUserId DSUserId;
+	/**
+	 * @brief Retrieves the platform user ID associated with the current instance.
+	 *
+	 * This method returns the unique platform-specific user identifier
+	 * associated with a particular user. It provides a way to identify
+	 * and differentiate between users on the platform.
+	 *
+	 * @return The platform user ID as an FPlatformUserId object.
+	 */
+	virtual FPlatformUserId GetUserId() override
+	{
+		return DSUserId;
+	}
+	/**
+	 * @brief Associates a platform user ID with the current instance.
+	 *
+	 * This method is used to assign a specific platform user identifier to the instance,
+	 * allowing the instance to manage or track user-specific operations or settings.
+	 *
+	 * It overrides the base class definition to specifically handle the platform user
+	 * assignment for this implementation.
+	 *
+	 * @param User The platform user identifier to associate with the instance.
+	 */
+	virtual void SetUserId(FPlatformUserId User) override
+	{
+		DSUserId = User;
+	}
 	/**
 	 * @brief Initializes the DualSense library with the specified device context.
 	 *
@@ -139,6 +169,10 @@ public:
 	virtual ISonyGamepadInterface* Get() override
 	{
 		return this;
+	}
+	virtual FString GetDevicePath() override
+	{
+		return HIDDeviceContexts.Path;
 	}
 	/**
 	 * Retrieves the current battery level of the DualSense controller.

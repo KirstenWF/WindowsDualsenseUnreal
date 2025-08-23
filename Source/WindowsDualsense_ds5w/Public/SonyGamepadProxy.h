@@ -24,8 +24,8 @@ class WINDOWSDUALSENSE_DS5W_API USonyGamepadProxy : public UObject
 public:
 	static FGenericPlatformInputDeviceMapper PlatformInputDeviceMapper;
 	
-	UFUNCTION(BlueprintCallable, Category = "SonyGamepad: Remap Devices To User")
-	static void RemapControllerIdToUser(int32 ControllerId, int32 NewUser, int32 OldUser);
+	// UFUNCTION(BlueprintCallable, Category = "SonyGamepad: Remap Devices To User")
+	// static void RemapControllerIdToUser(int32 ControllerId, int32 NewUser);
 	
 	/**
 	 * Checks if the DualSense or DualShock device with the specified Controller ID is connected.

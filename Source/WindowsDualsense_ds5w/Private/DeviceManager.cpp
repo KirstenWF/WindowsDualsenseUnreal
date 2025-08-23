@@ -19,8 +19,7 @@ DeviceManager::DeviceManager(const TSharedRef<FGenericApplicationMessageHandler>
 	DeviceMapper = FWindowsPlatformApplicationMisc::CreatePlatformInputDeviceManager();
 	DeviceMapper->Get().GetOnInputDeviceConnectionChange().AddRaw(this, &DeviceManager::OnConnectionChange);
 	FCoreDelegates::OnUserLoginChangedEvent.AddRaw(this, &DeviceManager::OnUserLoginChangedEvent);
-	
-	DeviceMapper->Get().GetOnInputDevicePairingChange().AddRaw(this, &DeviceManager::OnChangedMyEvent);
+	DeviceMapper->Get().GetOnInputDevicePairingChange().AddRaw(this, &DeviceManager::OnChangedPairing);
 }
 
 DeviceManager::~DeviceManager()
@@ -51,11 +50,13 @@ void DeviceManager::Tick(float DeltaTime)
 		const FInputDeviceId& Device = FInputDeviceId::CreateFromInternalId(DeviceId.GetId());
 		const FPlatformUserId& UserId = IPlatformInputDeviceMapper::Get().GetUserForInputDevice(Device);
 
+		UE_LOG(LogTemp, Log, TEXT("DeviceManager::Tick() - DeviceId: %d"), DeviceId.GetId());
 		if (const int32 ControllerId = FPlatformMisc::GetUserIndexForPlatformUser(UserId); ControllerId == -1)
 		{
 			continue;
 		}
 
+		UE_LOG(LogTemp, Log, TEXT("DeviceManager::Tick() - DeviceId: %d"), DeviceId.GetId());
 		ISonyGamepadInterface* Gamepad = UDeviceContainerManager::Get()->GetLibraryInstance(DeviceId.GetId());
 		if (!Gamepad)
 		{
@@ -194,16 +195,15 @@ void DeviceManager::OnConnectionChange(EInputDeviceConnectionState Connected, FP
 }
 
 bool bIsBloking = false;
-void DeviceManager::OnChangedMyEvent(FInputDeviceId ControllerId, FPlatformUserId NewUser, FPlatformUserId OldUer)
+void DeviceManager::OnChangedPairing(FInputDeviceId ControllerId, FPlatformUserId NewUser, FPlatformUserId OldUer)
 {
 	if (bIsBloking)
 	{
 		return;
 	}
-	
 	bIsBloking = true;
 	DeviceMapper->Get().Internal_ChangeInputDeviceUserMapping(ControllerId, NewUser, OldUer);
-	// DeviceMapper->Get().Internal_MapInputDeviceToUser(ControllerId, NewUser, EInputDeviceConnectionState::Connected);
+	DeviceMapper->Get().Internal_MapInputDeviceToUser(ControllerId, NewUser, EInputDeviceConnectionState::Connected);
 	bIsBloking = false;
 }
 void DeviceManager::OnUserLoginChangedEvent(bool bLoggedIn, int32 UserId, int32 UserIndex) const
@@ -212,8 +212,6 @@ void DeviceManager::OnUserLoginChangedEvent(bool bLoggedIn, int32 UserId, int32 
 
 	FInputDeviceId Device = FInputDeviceId::CreateFromInternalId(UserId);
 	FPlatformUserId User = FPlatformMisc::GetPlatformUserForUserIndex(UserIndex);
-
-	
 	
 	if (const FPlatformUserId& UserPair = DeviceMapper->Get().GetUserForInputDevice(Device); UserPair != User)
 	{

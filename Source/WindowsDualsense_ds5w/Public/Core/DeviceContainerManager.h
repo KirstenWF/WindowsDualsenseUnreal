@@ -31,6 +31,15 @@ public:
 	 */
 	static UDeviceContainerManager* Get();
 	/**
+	 * Converts a provided gamepad index to a mapped identifier based on settings or returns the input index
+	 * if no mapping is found. This function utilizes predefined gamepad names and checks for mappings
+	 * in the device settings.
+	 *
+	 * @param Index The index of the Sony gamepad to map.
+	 * @return The mapped identifier if found, otherwise the original index.
+	 */
+	static int32 ToMap(int32 Index);
+	/**
 	 * Removes all existing library instances managed by the device container. This method
 	 * is responsible for cleaning up and unloading all currently allocated Sony gamepad
 	 * controllers' library resources, ensuring proper resource management and preventing
@@ -83,6 +92,7 @@ public:
 	 * @return The number of allocated device library instances.
 	 */
 	static int32 GetAllocatedDevices();
+	static TMap<int32, ISonyGamepadInterface*> GetAllocatedDevicesMap();
 	
 private:
 	/**

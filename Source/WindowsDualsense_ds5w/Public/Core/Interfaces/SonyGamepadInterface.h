@@ -53,26 +53,45 @@ public:
 	 */
 	virtual void Reconnect() = 0;
 	/**
+	 * Retrieves the platform user identifier associated with the current gamepad.
+	 *
+	 * @return The unique platform user ID for the gamepad.
+	 */
+	virtual FPlatformUserId GetUserId() = 0;
+	/**
+	 * Sets the user ID associated with the platform user.
+	 *
+	 * @param User The platform user ID to associate.
+	 */
+	virtual void SetUserId(FPlatformUserId User) = 0;
+	/**
+	 * Pure virtual function that must be implemented by derived classes.
+	 * Used to attempt reconnection with the associated Sony gamepad device.
+	 * Typically, the implementation should ensure the gamepad is reconnected
+	 * and restored to its operational state.
+	 *
+	 * This function is expected to be executed when the connection to the gamepad
+	 * has been lost or is in a disconnected state.
+	 */
+	virtual FString GetDevicePath() = 0;
+	/**
 	 * Pure virtual function that checks the connection status of the gamepad.
 	 *
 	 * @return True if the gamepad is connected, false otherwise.
 	 */
 	virtual bool IsConnected() = 0;
-
 	/**
 	 * Retrieves the type of the device.
 	 *
 	 * @return The type of the device as an EDeviceType enumeration.
 	 */
 	virtual EDeviceType GetDeviceType() = 0;
-
 	/**
 	 * Retrieves the connection type of the device.
 	 *
 	 * @return The connection type of the device as an EDeviceConnection enumeration.
 	 */
 	virtual EDeviceConnection GetConnectionType() = 0;
-
 	/**
 	 * Configures device settings for the Sony gamepad interface.
 	 * This pure virtual function must be implemented by derived classes to apply
@@ -81,7 +100,6 @@ public:
 	 * @param Settings Reference to an FDeviceSettings struct containing the desired configuration parameters for the device.
 	 */
 	virtual void Settings(const FSettings<FFeatureReport>& Settings) = 0;
-
 	/**
 	 * Initializes the gamepad library using the specified device context.
 	 *
