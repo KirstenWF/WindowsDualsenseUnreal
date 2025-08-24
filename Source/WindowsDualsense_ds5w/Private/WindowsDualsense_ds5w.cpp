@@ -11,11 +11,22 @@
 #include "Microsoft/AllowMicrosoftPlatformTypes.h"
 #include <stdio.h>
 
+#include "DeviceSettings.h"
+#include "ISettingsModule.h"
 #include "Core/DeviceContainerManager.h"
 #define LOCTEXT_NAMESPACE "FWindowsDualsense_ds5wModule"
 
 void FWindowsDualsense_ds5wModule::StartupModule()
 {
+	if (ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
+	{
+		SettingsModule->RegisterSettings(
+			"Project", "Plugins", "Sony Gamepad",
+			FText::FromString("Sony Gamepad Settings"),
+			FText::FromString("Configuration settings for Windows Sony Gamepad plugin support."),
+			GetMutableDefault<UDeviceSettings>());
+	}
+
 	IModularFeatures::Get().RegisterModularFeature(IInputDeviceModule::GetModularFeatureName(), this);
 	RegisterCustomKeys();
 }
@@ -37,11 +48,9 @@ TSharedPtr<IInputDevice> FWindowsDualsense_ds5wModule::CreateInputDevice(
 	}
 
 	DualSenseLibraryManager->CreateLibraryInstances();
-	for (int32 i = 0; i < DualSenseLibraryManager->GetAllocatedDevices(); i++)
+	for (const TPair<int32, ISonyGamepadInterface*>& Pair : DualSenseLibraryManager->GetAllocatedDevicesMap())
 	{
-		if (i < 1) continue;
-
-		DeviceInstance->SetController(FInputDeviceId::CreateFromInternalId(i));
+		DeviceInstance->SetController(Pair.Value->GetUserId(), FInputDeviceId::CreateFromInternalId(Pair.Key));
 	}
 
 	DeviceInstance->SetLazyLoading(false);

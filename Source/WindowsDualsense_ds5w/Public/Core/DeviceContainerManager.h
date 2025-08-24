@@ -31,6 +31,15 @@ public:
 	 */
 	static UDeviceContainerManager* Get();
 	/**
+	 * Converts a provided gamepad index to a mapped identifier based on settings or returns the input index
+	 * if no mapping is found. This function utilizes predefined gamepad names and checks for mappings
+	 * in the device settings.
+	 *
+	 * @param Index The index of the Sony gamepad to map.
+	 * @return The mapped identifier if found, otherwise the original index.
+	 */
+	static int32 ToMap(int32 Index);
+	/**
 	 * Removes all existing library instances managed by the device container. This method
 	 * is responsible for cleaning up and unloading all currently allocated Sony gamepad
 	 * controllers' library resources, ensuring proper resource management and preventing
@@ -83,6 +92,36 @@ public:
 	 * @return The number of allocated device library instances.
 	 */
 	static int32 GetAllocatedDevices();
+	/**
+	 * Retrieves the map of allocated device library instances. This map associates unique integer
+	 * keys with instances implementing the Sony gamepad interface, allowing access to the currently
+	 * managed devices.
+	 */
+	static TMap<int32, ISonyGamepadInterface*> GetAllocatedDevicesMap();
+	/**
+	 * Retrieves a map of settings where keys and values are represented as integer pairs.
+	 * This method is used to access configuration or preference settings in a structured format.
+	 *
+	 * @return A TMap containing integer keys and their respective integer values representing settings.
+	 */
+	static TMap<int32, int32> GetSettings()
+	{
+		return Settings;
+	}
+	/**
+	 * Updates the settings for a specific controller associated with a specified user.
+	 * This function configures and applies necessary configuration changes for the device.
+	 *
+	 * @param UserId The unique identifier of the user.
+	 * @param ControllerId The unique identifier of the controller associated with the user.
+	 */
+	static void SetSettings(int32 UserId, int32 ControllerId)
+	{
+		if (Settings.Contains(UserId))
+		{
+			Settings[UserId] = ControllerId;
+		}
+	}
 	
 private:
 	/**
@@ -92,6 +131,12 @@ private:
 	 * enforcing a single unique instance of the manager class.
 	 */
 	static UDeviceContainerManager* Instance;
+	/**
+	 * A static map that stores key-value pairs of integers used for configuration
+	 * or settings management within the application. Provides a mechanism for
+	 * efficient lookup and storage of integer-based settings.
+	 */
+	static TMap<int32, int32> Settings;
 	/**
 	 * A static map that stores instances of Sony gamepad interfaces, identified by a unique
 	 * controller ID. This map is used to manage and provide access to the library instances

@@ -11,6 +11,7 @@
 #include "SonyGamepadProxy.generated.h"
 
 
+
 /**
  * 
  */
@@ -19,7 +20,13 @@ class WINDOWSDUALSENSE_DS5W_API USonyGamepadProxy : public UObject
 {
 	GENERATED_BODY()
 
+
 public:
+	static FGenericPlatformInputDeviceMapper PlatformInputDeviceMapper;
+	
+	UFUNCTION(BlueprintCallable, Category = "SonyGamepad: Remap Device from User")
+	static void RemapControllerIdToUser(int32 GamepadId, int32 UserId, int32 OldUser);
+	
 	/**
 	 * Checks if the DualSense or DualShock device with the specified Controller ID is connected.
 	 *

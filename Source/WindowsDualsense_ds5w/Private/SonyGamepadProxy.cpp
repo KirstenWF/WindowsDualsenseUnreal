@@ -4,8 +4,26 @@
 
 
 #include "SonyGamepadProxy.h"
-
 #include "Core/DeviceContainerManager.h"
+
+
+class UDeviceSettings;
+
+void USonyGamepadProxy::RemapControllerIdToUser(int32 GamepadId, int32 UserId, int32 OldUser)
+{
+	if (TMap<int32, int32> MapUsers = UDeviceContainerManager::GetSettings(); MapUsers.Contains(UserId))
+	{
+		const int32 OldDevice = MapUsers[UserId];
+		UDeviceContainerManager::Get()->SetSettings(OldUser, OldDevice);
+	}
+	
+	UDeviceContainerManager::Get()->SetSettings(UserId, GamepadId);
+
+	const FPlatformUserId User = FPlatformUserId::CreateFromInternalId(UserId);
+	const FPlatformUserId Old  = FPlatformUserId::CreateFromInternalId(OldUser);
+	const FInputDeviceId Device = FInputDeviceId::CreateFromInternalId(GamepadId);
+	PlatformInputDeviceMapper.Get().GetOnInputDevicePairingChange().Broadcast(Device, User, Old);
+}
 
 bool USonyGamepadProxy::DeviceIsConnected(int32 ControllerId)
 {
@@ -14,6 +32,11 @@ bool USonyGamepadProxy::DeviceIsConnected(int32 ControllerId)
 		return false;
 	}
 
+	PlatformInputDeviceMapper.Get().GetOnInputDeviceConnectionChange().Broadcast(
+		EInputDeviceConnectionState::Connected,
+		FPlatformUserId::CreateFromInternalId(UDeviceContainerManager::ToMap(ControllerId)),
+		FInputDeviceId::CreateFromInternalId(UDeviceContainerManager::ToMap(ControllerId))
+	);
 	return true;
 }
 
@@ -51,7 +74,7 @@ bool USonyGamepadProxy::DeviceReconnect(int32 ControllerId)
 
 bool USonyGamepadProxy::DeviceDisconnect(int32 ControllerId)
 {
-	UDeviceContainerManager::Get()->RemoveLibraryInstance(ControllerId);
+	UDeviceContainerManager::Get()->RemoveLibraryInstance(UDeviceContainerManager::ToMap(ControllerId));
 	return true;
 }
 
@@ -80,7 +103,7 @@ void USonyGamepadProxy::LedColorEffects(int32 ControllerId, FColor Color, float 
 void USonyGamepadProxy::LedMicEffects(int32 ControllerId, ELedMicEnum Value)
 {
 	ISonyGamepadInterface* Gamepad = Cast<ISonyGamepadInterface>(UDeviceContainerManager::Get()->GetLibraryInstance(ControllerId));
-	if (!IsValid(Gamepad->_getUObject()))
+	if (!Gamepad)
 	{
 		return;
 	}
@@ -91,7 +114,7 @@ void USonyGamepadProxy::LedMicEffects(int32 ControllerId, ELedMicEnum Value)
 void USonyGamepadProxy::EnableTouch(int32 ControllerId, bool bEnableTouch)
 {
 	ISonyGamepadInterface* Gamepad = Cast<ISonyGamepadInterface>(UDeviceContainerManager::Get()->GetLibraryInstance(ControllerId));
-	if (!IsValid(Gamepad->_getUObject()))
+	if (!Gamepad)
 	{
 		return;
 	}
@@ -102,7 +125,7 @@ void USonyGamepadProxy::EnableTouch(int32 ControllerId, bool bEnableTouch)
 void USonyGamepadProxy::EnableAccelerometerValues(int32 ControllerId, bool bEnableAccelerometer)
 {
 	ISonyGamepadInterface* Gamepad = Cast<ISonyGamepadInterface>(UDeviceContainerManager::Get()->GetLibraryInstance(ControllerId));
-	if (!IsValid(Gamepad->_getUObject()))
+	if (!Gamepad)
 	{
 		return;
 	}
@@ -113,7 +136,7 @@ void USonyGamepadProxy::EnableAccelerometerValues(int32 ControllerId, bool bEnab
 void USonyGamepadProxy::EnableGyroscopeValues(int32 ControllerId, bool bEnableGyroscope)
 {
 	ISonyGamepadInterface* Gamepad = Cast<ISonyGamepadInterface>(UDeviceContainerManager::Get()->GetLibraryInstance(ControllerId));
-	if (!IsValid(Gamepad->_getUObject()))
+	if (!Gamepad)
 	{
 		return;
 	}

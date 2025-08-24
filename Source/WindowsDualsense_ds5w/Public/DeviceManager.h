@@ -136,6 +136,16 @@ public:
 	 */
 	void OnUserLoginChangedEvent(bool bLoggedIn, int32 UserId, int32 UserIndex) const;
 	/**
+	 * Handles changes in the pairing between an input device and platform users.
+	 * This method updates the internal mappings whenever the association
+	 * of a controller with platform users changes.
+	 *
+	 * @param ControllerId The ID of the input device whose pairing has changed.
+	 * @param NewUser The platform user ID to which the device is now associated.
+	 * @param OldUer The platform user ID previously associated with the device.
+	 */
+	void OnChangedPairing(FInputDeviceId ControllerId, FPlatformUserId NewUser, FPlatformUserId OldUer) const;
+	/**
 	 * Handles controller connection state changes
 	 * @param Connected New connection state
 	 * @param PlatformUserId Platform user associated with the device
@@ -143,18 +153,21 @@ public:
 	 */
 	void OnConnectionChange(EInputDeviceConnectionState Connected, FPlatformUserId PlatformUserId,
 	                        FInputDeviceId InputDeviceId) const;
-
 	/**
-	 * Assigns a specified input device to a platform user and establishes its connection state.
+	 * Associates an input device with a platform user.
+	 * This method maps the specified input device to the given user
+	 * and updates the input device connection state.
 	 *
-	 * @param Device The unique identifier of the input device to be assigned to a platform user.
+	 * @param User The platform user identifier to associate with the device.
+	 * @param Device The input device identifier to be mapped to the user.
 	 */
-	void SetController(const FInputDeviceId Device) const
+	void SetController(const FPlatformUserId User, const FInputDeviceId Device) const
 	{
-		const FPlatformUserId& User = FPlatformMisc::GetPlatformUserForUserIndex(Device.GetId());
-		DeviceMapper->Get().Internal_MapInputDeviceToUser(Device, User, EInputDeviceConnectionState::Connected);
+		const int32 ControllerId = Device.GetId();
+		const FInputDeviceId DeviceId = FInputDeviceId::CreateFromInternalId(ControllerId);
+		const FPlatformUserId UserId  = FPlatformMisc::GetPlatformUserForUserIndex(User.GetInternalId());
+		DeviceMapper->Get().Internal_MapInputDeviceToUser(DeviceId, UserId, EInputDeviceConnectionState::Connected);
 	}
-	
 	/**
 	 * Unmaps the specified input device from its associated user and marks its connection state as disconnected.
 	 *
@@ -162,6 +175,7 @@ public:
 	 */
 	void UnsetController(const FInputDeviceId Device) const
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Unsetting controller %d"), Device.GetId());
 		const FPlatformUserId& User = FPlatformMisc::GetPlatformUserForUserIndex(Device.GetId());
 		DeviceMapper->Get().Internal_MapInputDeviceToUser(Device, User, EInputDeviceConnectionState::Disconnected);
 	}

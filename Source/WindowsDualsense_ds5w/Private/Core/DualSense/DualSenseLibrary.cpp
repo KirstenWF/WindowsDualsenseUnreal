@@ -29,9 +29,6 @@ void UDualSenseLibrary::ShutdownLibrary()
 
 void UDualSenseLibrary::Reconnect()
 {
-	PlatformInputDeviceMapper.Get().GetOnInputDeviceConnectionChange().Broadcast(
-		EInputDeviceConnectionState::Connected, FPlatformUserId::CreateFromInternalId(ControllerID),
-		FInputDeviceId::CreateFromInternalId(ControllerID));
 }
 
 bool UDualSenseLibrary::IsConnected()

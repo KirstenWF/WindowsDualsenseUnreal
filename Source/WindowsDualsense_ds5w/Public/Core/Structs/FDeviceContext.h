@@ -23,7 +23,6 @@ USTRUCT()
 struct FDeviceContext
 {
 	GENERATED_BODY()
-
 	/**
 	 * @brief Raw device handle used for communication with a specific input/output hardware device.
 	 *

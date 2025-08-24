@@ -34,9 +34,6 @@ void UDualShockLibrary::ShutdownLibrary()
 
 void UDualShockLibrary::Reconnect()
 {
-	PlatformInputDeviceMapper.Get().GetOnInputDeviceConnectionChange().Broadcast(
-		EInputDeviceConnectionState::Connected, FPlatformUserId::CreateFromInternalId(ControllerID),
-		FInputDeviceId::CreateFromInternalId(ControllerID));
 }
 
 bool UDualShockLibrary::IsConnected()
