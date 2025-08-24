@@ -86,8 +86,6 @@ void DeviceManager::Tick(float DeltaTime)
 			Disconnect(DeviceId);
 			UDeviceContainerManager::Get()->RemoveLibraryInstance(DeviceId.GetId());
 		}
-		UE_LOG(LogTemp, Log, TEXT("DeviceManager::Tick() - DeviceId: %d"), DeviceId.GetId());
-		UE_LOG(LogTemp, Log, TEXT("DeviceManager::Tick() - UserID: %d"), UserId.GetInternalId());
 	}
 }
 

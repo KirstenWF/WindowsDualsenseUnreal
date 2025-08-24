@@ -49,7 +49,7 @@ int32 UDeviceContainerManager::ToMap(const int32 Index)
 ISonyGamepadInterface* UDeviceContainerManager::GetLibraryOrReconnect(int32 ControllerId)
 {
 	const int32 GamepadId = ToMap(ControllerId);
-	if (GamepadId == -1)
+	if (GamepadId < 0)
 	{
 		return nullptr;
 	}
@@ -212,7 +212,7 @@ ISonyGamepadInterface* UDeviceContainerManager::CreateLibraryInstance(int32 Cont
 	}
 
 	const int32 Id = ToMap(ControllerID) - OffsetDetected;
-	if (Id == -1)
+	if (Id < 0)
 	{
 		return nullptr;
 	}
