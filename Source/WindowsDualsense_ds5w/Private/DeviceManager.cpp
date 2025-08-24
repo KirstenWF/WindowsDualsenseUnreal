@@ -17,8 +17,8 @@ DeviceManager::DeviceManager(const TSharedRef<FGenericApplicationMessageHandler>
 	LazyLoading = Lazily;
 	
 	DeviceMapper = FWindowsPlatformApplicationMisc::CreatePlatformInputDeviceManager();
-	DeviceMapper->Get().GetOnInputDeviceConnectionChange().AddRaw(this, &DeviceManager::OnConnectionChange);
 	FCoreDelegates::OnUserLoginChangedEvent.AddRaw(this, &DeviceManager::OnUserLoginChangedEvent);
+	DeviceMapper->Get().GetOnInputDeviceConnectionChange().AddRaw(this, &DeviceManager::OnConnectionChange);
 	DeviceMapper->Get().GetOnInputDevicePairingChange().AddRaw(this, &DeviceManager::OnChangedPairing);
 }
 
@@ -31,7 +31,10 @@ DeviceManager::~DeviceManager()
 
 void DeviceManager::Tick(float DeltaTime)
 {
-	if (LazyLoading) return;
+	if (LazyLoading)
+	{
+		return;
+	}
 
 	PollAccumulator += DeltaTime;
 	if (PollAccumulator < PollInterval)
@@ -47,18 +50,21 @@ void DeviceManager::Tick(float DeltaTime)
 	DeviceMapper->Get().GetAllConnectedInputDevices(OutInputDevices);
 	for (const FInputDeviceId& DeviceId : OutInputDevices)
 	{
-		const FInputDeviceId& Device = FInputDeviceId::CreateFromInternalId(DeviceId.GetId());
-		const FPlatformUserId& UserId = IPlatformInputDeviceMapper::Get().GetUserForInputDevice(Device);
-
-		UE_LOG(LogTemp, Log, TEXT("DeviceManager::Tick() - DeviceId: %d"), DeviceId.GetId());
+		FInputDeviceId Device = FInputDeviceId::CreateFromInternalId(DeviceId.GetId());
+		FPlatformUserId UserId = IPlatformInputDeviceMapper::Get().GetUserForInputDevice(Device);
 		if (const int32 ControllerId = FPlatformMisc::GetUserIndexForPlatformUser(UserId); ControllerId == -1)
 		{
 			continue;
 		}
 
-		UE_LOG(LogTemp, Log, TEXT("DeviceManager::Tick() - DeviceId: %d"), DeviceId.GetId());
 		ISonyGamepadInterface* Gamepad = UDeviceContainerManager::Get()->GetLibraryInstance(DeviceId.GetId());
 		if (!Gamepad)
+		{
+			Disconnect(DeviceId);
+			continue;
+		}
+		
+		if (!UDeviceContainerManager::Get()->GetSettings().Contains(DeviceId.GetId()))
 		{
 			Disconnect(DeviceId);
 			continue;
@@ -80,6 +86,8 @@ void DeviceManager::Tick(float DeltaTime)
 			Disconnect(DeviceId);
 			UDeviceContainerManager::Get()->RemoveLibraryInstance(DeviceId.GetId());
 		}
+		UE_LOG(LogTemp, Log, TEXT("DeviceManager::Tick() - DeviceId: %d"), DeviceId.GetId());
+		UE_LOG(LogTemp, Log, TEXT("DeviceManager::Tick() - UserID: %d"), UserId.GetInternalId());
 	}
 }
 
@@ -194,24 +202,25 @@ void DeviceManager::OnConnectionChange(EInputDeviceConnectionState Connected, FP
 	}
 }
 
-bool bIsBloking = false;
-void DeviceManager::OnChangedPairing(FInputDeviceId ControllerId, FPlatformUserId NewUser, FPlatformUserId OldUer)
+bool bIsChange = false;
+void DeviceManager::OnChangedPairing(const FInputDeviceId ControllerId, const FPlatformUserId NewUser, const FPlatformUserId OldUer) const
 {
-	if (bIsBloking)
+	if (bIsChange)
 	{
 		return;
 	}
-	bIsBloking = true;
+	bIsChange = true;
+	
 	DeviceMapper->Get().Internal_ChangeInputDeviceUserMapping(ControllerId, NewUser, OldUer);
-	DeviceMapper->Get().Internal_MapInputDeviceToUser(ControllerId, NewUser, EInputDeviceConnectionState::Connected);
-	bIsBloking = false;
+	DeviceMapper->Get().Internal_SetInputDeviceConnectionState(ControllerId, EInputDeviceConnectionState::Connected);
+	bIsChange = false;
 }
 void DeviceManager::OnUserLoginChangedEvent(bool bLoggedIn, int32 UserId, int32 UserIndex) const
 {
 	if (!bLoggedIn) return;
 
-	FInputDeviceId Device = FInputDeviceId::CreateFromInternalId(UserId);
-	FPlatformUserId User = FPlatformMisc::GetPlatformUserForUserIndex(UserIndex);
+	const FInputDeviceId Device = FInputDeviceId::CreateFromInternalId(UserId);
+	const FPlatformUserId User = FPlatformMisc::GetPlatformUserForUserIndex(UserIndex);
 	
 	if (const FPlatformUserId& UserPair = DeviceMapper->Get().GetUserForInputDevice(Device); UserPair != User)
 	{

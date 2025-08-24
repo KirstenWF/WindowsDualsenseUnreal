@@ -144,7 +144,7 @@ public:
 	 * @param NewUser The platform user ID to which the device is now associated.
 	 * @param OldUer The platform user ID previously associated with the device.
 	 */
-	void OnChangedPairing(FInputDeviceId ControllerId, FPlatformUserId NewUser, FPlatformUserId OldUer);
+	void OnChangedPairing(FInputDeviceId ControllerId, FPlatformUserId NewUser, FPlatformUserId OldUer) const;
 	/**
 	 * Handles controller connection state changes
 	 * @param Connected New connection state
@@ -163,9 +163,10 @@ public:
 	 */
 	void SetController(const FPlatformUserId User, const FInputDeviceId Device) const
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Set Controller %d"), Device.GetId());
-		DeviceMapper->Get().Internal_ChangeInputDeviceUserMapping(Device, User, FPlatformUserId::CreateFromInternalId(Device.GetId()));
-		DeviceMapper->Get().Internal_MapInputDeviceToUser(Device, User, EInputDeviceConnectionState::Connected);
+		const int32 ControllerId = Device.GetId();
+		const FInputDeviceId DeviceId = FInputDeviceId::CreateFromInternalId(ControllerId);
+		const FPlatformUserId UserId  = FPlatformMisc::GetPlatformUserForUserIndex(User.GetInternalId());
+		DeviceMapper->Get().Internal_MapInputDeviceToUser(DeviceId, UserId, EInputDeviceConnectionState::Connected);
 	}
 	/**
 	 * Unmaps the specified input device from its associated user and marks its connection state as disconnected.

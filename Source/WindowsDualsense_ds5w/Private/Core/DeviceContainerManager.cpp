@@ -12,6 +12,7 @@
 
 UDeviceContainerManager* UDeviceContainerManager::Instance;
 TMap<int32, ISonyGamepadInterface*> UDeviceContainerManager::LibraryInstances;
+TMap<int32, int32> UDeviceContainerManager::Settings;
 
 UDeviceContainerManager* UDeviceContainerManager::Get()
 {
@@ -23,77 +24,81 @@ UDeviceContainerManager* UDeviceContainerManager::Get()
 	return Instance;
 }
 
-int32 UDeviceContainerManager::ToMap(int32 Index)
+int32 UDeviceContainerManager::ToMap(const int32 Index)
 {
-	if (UDeviceSettings* Settings = NewObject<UDeviceSettings>())
+	if (UDeviceSettings* SettingsDevice = NewObject<UDeviceSettings>())
 	{
-		TMap<int32, int32> ContextMap = {
-			{Settings->SonyGamepadOne.UserId, Settings->SonyGamepadOne.DeviceId},
-			{Settings->SonyGamepadTwo.UserId, Settings->SonyGamepadTwo.DeviceId},
-			{Settings->SonyGamepadThree.UserId, Settings->SonyGamepadThree.DeviceId},
-			{Settings->SonyGamepadFour.UserId, Settings->SonyGamepadFour.DeviceId}
-		};
-
-		if (ContextMap.Contains(Index))
+		if (Settings.Num() == 0)
 		{
-			return ContextMap[Index];
+			Settings = {
+				{SettingsDevice->SonyGamepadOne.UserId, SettingsDevice->SonyGamepadOne.DeviceId},
+				{SettingsDevice->SonyGamepadTwo.UserId, SettingsDevice->SonyGamepadTwo.DeviceId},
+				{SettingsDevice->SonyGamepadThree.UserId, SettingsDevice->SonyGamepadThree.DeviceId},
+				{SettingsDevice->SonyGamepadFour.UserId, SettingsDevice->SonyGamepadFour.DeviceId}
+			};
 		}
+	}
+
+	if (Settings.Contains(Index))
+	{
+		return Settings[Index];
 	}
 	return -1;
 }
 
 ISonyGamepadInterface* UDeviceContainerManager::GetLibraryOrReconnect(int32 ControllerId)
 {
-	int32 OldControllerId = ToMap(ControllerId);
-	if (OldControllerId == -1)
+	const int32 GamepadId = ToMap(ControllerId);
+	if (GamepadId == -1)
 	{
 		return nullptr;
 	}
 	
-	if (LibraryInstances.Contains(OldControllerId))
+	if (LibraryInstances.Contains(GamepadId))
 	{
-		if (LibraryInstances[OldControllerId]->IsConnected())
+		if (LibraryInstances[GamepadId]->IsConnected())
 		{
-			return LibraryInstances[OldControllerId];
+			LibraryInstances[GamepadId]->SetControllerId(GamepadId);
+			LibraryInstances[GamepadId]->SetUserId(FPlatformUserId::CreateFromInternalId(ControllerId));
+			return LibraryInstances[GamepadId];
 		}
 
-		RemoveLibraryInstance(OldControllerId); // destruct instance to reconnect
+		RemoveLibraryInstance(GamepadId); // destruct instance to reconnect
 	}
 
-	if (!LibraryInstances.Contains(OldControllerId))
+	if (!LibraryInstances.Contains(GamepadId))
 	{
 		ISonyGamepadInterface* DSLibrary = CreateLibraryInstance(ControllerId);
 		if (!DSLibrary)
 		{
 			return nullptr;
 		}
-		LibraryInstances.Add(OldControllerId, DSLibrary);
+		LibraryInstances.Add(GamepadId, DSLibrary);
 	}
-	return LibraryInstances[OldControllerId];
+	return LibraryInstances[GamepadId];
 }
 
 ISonyGamepadInterface* UDeviceContainerManager::GetLibraryInstance(int32 ControllerId)
 {
-	ControllerId = ToMap(ControllerId);
-	if (!LibraryInstances.Contains(ControllerId))
+	const int32 Id = ToMap(ControllerId);
+	if (!LibraryInstances.Contains(Id))
 	{
 		return nullptr;
 	}
 
-	if (!LibraryInstances[ControllerId]->IsConnected())
+	if (!LibraryInstances[Id]->IsConnected())
 	{
 		return nullptr;
 	}
-
-	return LibraryInstances[ControllerId];
+	return LibraryInstances[Id];
 }
 
 void UDeviceContainerManager::RemoveLibraryInstance(int32 ControllerId)
 {
-	if (LibraryInstances.Contains(ControllerId))
+	if (const int32 Id = ToMap(ControllerId); LibraryInstances.Contains(Id))
 	{
-		LibraryInstances[ControllerId]->ShutdownLibrary();
-		LibraryInstances.Remove(ControllerId);
+		LibraryInstances[Id]->ShutdownLibrary();
+		LibraryInstances.Remove(Id);
 	}
 }
 
@@ -152,25 +157,25 @@ void UDeviceContainerManager::CreateLibraryInstances()
 
 			int32 ControllerId = -1;
 			FPlatformUserId UserId;
-			if (UDeviceSettings* Settings = NewObject<UDeviceSettings>())
+			if (const UDeviceSettings* SettingsDevice = NewObject<UDeviceSettings>())
 			{
 				switch (DeviceIndex)
 				{
 				case 0:
-					ControllerId = Settings->SonyGamepadOne.DeviceId;
-					UserId = FPlatformUserId::CreateFromInternalId(Settings->SonyGamepadOne.UserId);
+					ControllerId = SettingsDevice->SonyGamepadOne.DeviceId;
+					UserId = FPlatformUserId::CreateFromInternalId(SettingsDevice->SonyGamepadOne.UserId);
 					break;
 				case 1:
-					ControllerId = Settings->SonyGamepadTwo.DeviceId;
-					UserId = FPlatformUserId::CreateFromInternalId(Settings->SonyGamepadTwo.UserId);
+					ControllerId = SettingsDevice->SonyGamepadTwo.DeviceId;
+					UserId = FPlatformUserId::CreateFromInternalId(SettingsDevice->SonyGamepadTwo.UserId);
 					break;
 				case 2:
-					ControllerId = Settings->SonyGamepadThree.DeviceId;
-					UserId = FPlatformUserId::CreateFromInternalId(Settings->SonyGamepadThree.UserId);
+					ControllerId = SettingsDevice->SonyGamepadThree.DeviceId;
+					UserId = FPlatformUserId::CreateFromInternalId(SettingsDevice->SonyGamepadThree.UserId);
 					break;
 				case 3:
-					ControllerId = Settings->SonyGamepadFour.DeviceId;
-					UserId = FPlatformUserId::CreateFromInternalId(Settings->SonyGamepadFour.UserId);
+					ControllerId = SettingsDevice->SonyGamepadFour.DeviceId;
+					UserId = FPlatformUserId::CreateFromInternalId(SettingsDevice->SonyGamepadFour.UserId);
 					break;
 				default:
 					ControllerId = 0;
@@ -178,7 +183,7 @@ void UDeviceContainerManager::CreateLibraryInstances()
 					break;
 				}
 			}
-			
+			SetSettings(UserId.GetInternalId(), ControllerId);
 			SonyGamepad->_getUObject()->AddToRoot();
 			SonyGamepad->SetUserId(UserId);
 			SonyGamepad->SetControllerId(ControllerId);
@@ -200,27 +205,34 @@ TMap<int32, ISonyGamepadInterface*> UDeviceContainerManager::GetAllocatedDevices
 
 ISonyGamepadInterface* UDeviceContainerManager::CreateLibraryInstance(int32 ControllerID)
 {
-	if (ToMap(ControllerID) == -1)
+	int32 OffsetDetected = 0;
+	if (const UDeviceSettings* SettingsDevice = NewObject<UDeviceSettings>())
+	{
+		OffsetDetected = SettingsDevice->OffsetPosition;
+	}
+
+	const int32 Id = ToMap(ControllerID) - OffsetDetected;
+	if (Id == -1)
 	{
 		return nullptr;
 	}
 	
 	TArray<FDeviceContext> DetectedDevices;
 	DetectedDevices.Reset();
-
+	
 	UDeviceHIDManager* HIDManager = NewObject<UDeviceHIDManager>();
 	if (!HIDManager->FindDevices(DetectedDevices) || DetectedDevices.Num() == 0)
 	{
 		UE_LOG(LogTemp, Error, TEXT("SonyGamepad: device not found. Creating default library instance."));
 		return nullptr;
 	}
-
-	if (ControllerID >= DetectedDevices.Num())
+	
+	if (Id >= DetectedDevices.Num())
 	{
 		return nullptr;
 	}
 	
-	FDeviceContext& Context = DetectedDevices[ControllerID];
+	FDeviceContext Context = DetectedDevices[Id];
 	if (Context.IsConnected)
 	{
 		ISonyGamepadInterface*  SonyGamepad = nullptr;
@@ -230,7 +242,7 @@ ISonyGamepadInterface* UDeviceContainerManager::CreateLibraryInstance(int32 Cont
 		{
 			SonyGamepad = Cast<ISonyGamepadInterface>(NewObject<UDualSenseLibrary>(UDualSenseLibrary::StaticClass()));
 		}
-
+	
 		if (Context.DeviceType == EDeviceType::DualShock4)
 		{
 			SonyGamepad = Cast<ISonyGamepadInterface>(NewObject<UDualShockLibrary>(UDualShockLibrary::StaticClass()));
@@ -240,9 +252,9 @@ ISonyGamepadInterface* UDeviceContainerManager::CreateLibraryInstance(int32 Cont
 		{
 			return nullptr;
 		}
-
+		
 		SonyGamepad->_getUObject()->AddToRoot();
-		SonyGamepad->SetControllerId(ToMap(ControllerID));
+		SonyGamepad->SetControllerId(Id + OffsetDetected);
 		SonyGamepad->SetUserId(FPlatformUserId::CreateFromInternalId(ControllerID));
 		SonyGamepad->InitializeLibrary(Context);
 		return SonyGamepad;
