@@ -1,142 +1,142 @@
-# Windows DualSense & DualShock 4 for Unreal Engine version 5.2 ~ 5.6
+# Windows DualSense & DualShock 4 Plugin for Unreal Engine
 
-![GitHub Release](https://img.shields.io/github/v/release/rafaelvaloto/WindowsDualsenseUnreal)
-![GitHub License](https://img.shields.io/github/license/rafaelvaloto/WindowsDualsenseUnreal)
-![GitHub contributors](https://img.shields.io/github/contributors/rafaelvaloto/WindowsDualsenseUnreal)
-![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/rafaelvaloto/WindowsDualsenseUnreal)
+![GitHub Release](https://img.shields.io/github/v/release/rafaelvaloto/WindowsDualsenseUnreal) ![GitHub License](https://img.shields.io/github/license/rafaelvaloto/WindowsDualsenseUnreal)
 
-### **Plugin with full support for DualSense (PS5) and DualShock 4 (PS4) controllers in Unreal Engine versions 5.2 ~ 5.6, for Windows platforms. No configuration needed.**
+**A Windows plugin that adds native and advanced support for Sony DualSense (PS5) and DualShock 4 (PS4) controllers to Unreal Engine 5.2 ~ 5.6. Easy installation via FAB, with no need for manual configuration.**
 
-### All controller customization features—such as vibration, haptic feedback, and LEDs—can be implemented directly in C++ or Blueprints. Below, we provide examples of both implementations.
+- Customize vibration, haptics, LEDs, triggers, and more.
+- Interfaces for both Blueprints and C++.
+- Fully integrated with Unreal Engine's force feedback system.
+- Supports local multiplayer with multiple controllers.
 
-### Supports advanced settings for triggers, haptic feedback, native Unreal force feedback Blueprint integration, vibrations, LEDs, battery level, gyroscope, accelerometer, and more.
+[See usage video](https://www.youtube.com/watch?v=GrCa5s6acmo)
 
-### [Links for installation](#Install-on-FAB-official-page-plugin-)
+## 1. Quick Installation
 
-# Usage via Blueprints
-### [See the example video](https://www.youtube.com/watch?v=GrCa5s6acmo)
+1. **Go to the plugin's official page on FAB:**  
+   [Plugin Page - FAB](https://www.fab.com/listings/e77a8f1d-8bbe-4673-a5ae-7f222c8c0960)
 
-### Controller Vibration, Audio, and Motor Force Reduction Settings
+2. **Click _Install_ or _Add to Project_**  
+   Select your Unreal Engine project.
 
-### Vibration Modes
-You can easily customize the vibration mode of the DualSense controller to suit your gameplay needs. This includes switching between different rumble patterns and intensities or applying advanced trigger haptics for more immersive feedback. Both C++ and Blueprint interfaces are available for fine-grained control.
+3. **Enable the plugin in Unreal Engine:**
+   - Open your project.
+   - Go to `Edit > Plugins`.
+   - Search for `Windows DualSense Plugin` and enable it.
+   - Restart Unreal Engine.
 
-### Audio Configuration
-The plugin supports audio-based vibration, allowing controller rumble to be driven by real-time audio signals from the game. This feature creates a more dynamic and immersive haptic experience, as the controller responds to in-game audio effects.
+   Done! The plugin is now ready to use.
 
-Use vibration mode `EDualSenseDeviceFeatureReport::HapticSoftRumble` when connected via USB for vibration and automatic synchronization of rumble with in-game audio, with no additional setup required.
+## General Settings for DualSense and DualShock 4
+The plugin allows you to configure essential features for both controllers:
 
-If you are using Bluetooth, use `EDualSenseDeviceFeatureReport::DefaultRumble`. In this case, you will need to configure audio-based vibration manually as shown in the [Audio-Based Vibration Support](#audio-based-vibration-support) section.
+- **Vibration:** Adjust vibration intensity, allowing for high, low, or even completely disabled feedback, according to user preference or game needs.
+- **Triggers (adaptive triggers on DualSense):** On compatible controllers, you can customize the required force for pressing triggers, enabling effects like dynamic resistance, tactile feedback, or smoother activation.
+- **LEDs and Feedback:** Adjust light effects and visual feedback, including player indication, battery level, and quick notifications.
+- **Real-Time Customization:** All settings can be changed during gameplay, with no need to reconnect or restart controllers.
 
-Only Usb Conneciton
-![Unreal Editor](Images/VibrationSettings.png)
+![Unreal Editor Blueprint](Images/DS5_DS4.png)
 
-### Soft Rumble (Motor Force Reduction)
-To provide a softer, less intense vibration, you can reduce the force of the vibration motors. This setting is useful for creating subtle feedback or making long play sessions more comfortable.
+## Light Bar
+The color of the controller's light bar can be changed dynamically during gameplay, allowing you to indicate status, players, or other forms of visual feedback to the user.
 
-**Example settings in Blueprints:**
-Open the settings menu in your Blueprint graph to adjust vibration mode, toggle audio-based rumble, and configure the Soft Rumble Reduce option, as shown in the image below:
+![Unreal Editor Blueprint](Images/Lightbar.png)
 
-![Unreal Editor](Images/Settings.png)
+## Motor Vibration (Force Feedback)
+Motor vibration for DualSense and DualShock 4 is automatically triggered by Unreal Engine's native **force feedback** system.
+This means any supported force feedback event in Unreal (Blueprints or C++) will activate controller motors—no extra configuration needed.
 
-### Basic example to check connection or reconnect
+- **How to use:**
+  Simply add force feedback events to your Unreal project as usual.
+  The plugin ensures PlayStation controller motors are fully compatible with those actions.
 
-![Unreal Editor](Images/ConnectCheck.png)
+![Unreal Editor Blueprint](Images/VibrationFF.png)
 
-### Disconnect device
+### Setting: Vibration and Trigger Intensity Reduction
+Allows you to adjust and reduce the strength of vibration (rumble) and intensity of DualSense adaptive trigger effects, as desired by the user or via game logic.
 
-![Unreal Editor](Images/Disconnect.png)
+![Unreal Editor Blueprint](Images/TriggerReduce.png)
 
-### Gamepad status
+## Trigger Effects (DualSense)
+DualSense controllers support special effects on adaptive triggers:
+- **Galloping:** Pulsating effect simulating gallop.
+- **Resistance:** The trigger becomes harder to press at certain positions.
+- **AutomaticGun:** Simulates full-auto fire feel.
+- **SemiAutomaticGun:** Tactile response for semi-auto shots.
 
-![Unreal Editor](Images/GamePadStatus.png)
+Galloping
 
-### Basic example apply Lightbar
+![Unreal Editor Blueprint](Images/Galloping.png)
 
-![Unreal Editor](Images/Lightbar.png)
+Resistance
+![Unreal Editor Blueprint](Images/Resistance.png)
 
-![Unreal Editor](Images/PlayerLeds.png)
+AutomaticGun
+![Unreal Editor Blueprint](Images/AutomaticGun.png)
 
-### Vibration force feedback
+SemiAutomaticGun
+![Unreal Editor Blueprint](Images/Weapon.png)
 
-![Unreal Editor](Images/Vibrations.png)
+## Audio-Based Vibration and Audio Configurations (DualSense)
+Set up DualSense audio and vibration based on in-game audio.
 
-### Trigger effects - DualSense 
+In the **DeviceSettings** Blueprint method, adjust the vibration's sensitivity, intensity, and response based on audio. You can also configure microphone volume, headset audio, and speaker output.
 
-![Unreal Editor](Images/AutomaticGun.png)
+![Unreal Editor Blueprint](Images/SettingAudio.png)
 
-![Unreal Editor](Images/Weapon.png)
+> **Note:** Advanced audio and vibration settings are only available when the DualSense controller is connected via **USB**.
+>
 
-![Unreal Editor](Images/Resistance.png)
+Even via **Bluetooth**, you can enable vibration synced with in-game audio using the `SetVibrationFromAudio` method. This feature provides real-time tactile feedback based on captured audio.
 
-![Unreal Editor](Images/Galloping.png)
+1. **Create a new Blueprint Actor** named `BP_Fire`.
+2. In the Blueprint, add a **fire particle system**. Inside the particle system component, add an **audio component**.
+3. Select the audio component and assign an audio asset to it.
+4. In the audio component, go to **Events** and click to create new events.
+5. Call the `SetVibrationFromAudio` function, passing in the parameters as shown in the example below.
+6. **Add the blueprint to your game level**. When the player character approaches and the fire particle system starts playing, the controller will receive vibration feedback based on the audio.
 
-### Audio-Based Vibration Support
-The plugin now features audio-based vibration support, enabling controller vibrations to react dynamically to in-game audio signals. This provides a more immersive and responsive user experience.
+![Unreal Editor Blueprint](Images/SettingsAudioComponent.png)
 
-![Unreal Editor](Images/AudioBased.png)
+![Unreal Editor Blueprint](Images/SendEnvelop.png)
 
+![Unreal Editor Blueprint](Images/ResetVibrationAudio.png)
 
-## Multiple players with multiple controllers
+## Multiplayer
+### Example: Multiplayer with 4 Players
+In your GameMode, use the **PostLogin** event to create and set up to 4 players. Each time a player connects, a new player is added and associated with the respective controller.
 
-### In your GameMode, add the players.
+![Unreal Editor Blueprint](Images/Multiplayer.png)
 
-![Unreal Editor](Images/MultiPlayers.png)
+## Remapping Gamepad Users
+You can specify which Unreal Engine player is associated with each DualSense or DualShock 4 controller directly in the plugin configuration file.
+This is useful for local multiplayer or split-screen games, where controller order (Player 1, Player 2, etc.) must be controlled.
 
-### After that, connect the players to the controllers.
+`` Edit > Project Settings > Plugins > Sony Gamepad Settings``
+1. **Adjust the UserIds:**
+   For each listed controller, set the `UserId` based on your desired player order:
+   - `Sony Gamepad One` with UserId 0 for Player 1
+   - `Sony Gamepad Two` with UserId 1 for Player 2
+2. **Save your changes:**
+   Click “Save” at the bottom right of Project Settings.
+3. **Restart the Editor:**
+   It is recommended to restart Unreal Editor to ensure changes take effect.
 
-![Unreal Editor](Images/PlayersConnected.png)
+![Edit > Project Settings > Plugins > Sony Gamepad Settings](Images/Remap.png)
 
-# Example using C++
+### Dynamic Gamepad Remapping
+Allows you to switch which controller is associated with each player during gameplay without needing to restart. Useful for local multiplayer or real-time controller switching.
 
->NOTE: Support for **DualShock 4** controllers is still under development.  
-Some features may be incomplete or unavailable in the current version.
+![Edit > Project Settings > Plugins > Sony Gamepad Settings](Images/RemapRuntime.png)
 
-### USonyGamepadProxy (DualSense) and (DualShock 4)
-```
-	USonyGamepadProxy::DeviceIsConnected(int32 ControllerId);
-	USonyGamepadProxy::DeviceReconnect(int32 ControllerId);
-	USonyGamepadProxy::DeviceDisconnect(int32 ControllerId);
-	USonyGamepadProxy::LevelBatteryDevice(int32 ControllerId);
-	USonyGamepadProxy::LedColorEffects(int32 ControllerId, FColor Color);
-	USonyGamepadProxy::LedPlayerEffects(int32 ControllerId, ELedPlayerEnum Value, ELedBrightnessEnum Brightness);
-	USonyGamepadProxy::LedMicEffects(int32 ControllerId, ELedMicEnum Value);
-	
-	PlayDynamicForceFeedback(0.5f, 3.f, true, true, true, true);
-```
+## Contributors ✨
 
-### UDualSenseProxy Trigger effects
-```
-	UDualSenseProxy::AutomaticGun(0, 0, 0, 8, EControllerHand::Left, true);
-	UDualSenseProxy::Weapon(0, 0, 0, 8, EControllerHand::AnyHand);
-	UDualSenseProxy::Galloping(0, 2, 5, 2, 5, 0.005, EControllerHand::Left);
-	UDualSenseProxy::Resistance(0, 1, 8, 8, EControllerHand::Right);
-```
-### UDualSenseProxy Example reset effects
-```
-	UDualSenseProxy::StopAllTriggersEffects(0);
-	UDualSenseProxy::StopTriggerEffect(0, EControllerHand::Left);
-	UDualSenseProxy::StopTriggerEffect(0, EControllerHand::Right);
-	UDualSenseProxy::StopTriggerEffect(0, EControllerHand::AnyHand);
-```
+Thanks go to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- All contributors will be added here automatically -->
+<!-- ALL-CONTRIBUTORS-LIST:END -->
 
-
-# Install on FAB official page plugin ![GitHub Release Download Plugin](https://img.shields.io/github/v/release/rafaelvaloto/WindowsDualsenseUnreal)
-
-To install this plugin directly via FAB (Official Source), follow the steps below:
-
-1. **Access the plugin's official page on FAB**  
-   Go to the official plugin page [by clicking here](https://www.fab.com/listings/e77a8f1d-8bbe-4673-a5ae-7f222c8c0960).
-
-3. **Install the Plugin**
-   - On the plugin page, click the **Install** or **Add to Project** button (depending on the FAB interface).
-   - Choose your Unreal Engine project where the plugin will be used, or simply download it for manual setup.
-
-4. **Configure in Unreal Engine**
-   - Open your project in Unreal Engine.
-   - Go to the **Plugins** tab under `Edit > Plugins`.
-   - Search for `Windows DualSense Plugin` in the list and enable it if necessary.
-   - Restart the project to apply the changes.
+[DualSense on Windows API](https://github.com/Ohjurot/DualSense-Windows), [Nielk1 on GIST](https://gist.github.com/Nielk1/6d54cc2c00d2201ccb8c2720ad7538db), [DualSenseAPI](https://github.com/BadMagic100/DualSenseAPI/tree/master), [flok pydualsense](https://github.com/flok/pydualsense).
 
 ---
 ## 📍 Roadmap
@@ -146,14 +146,3 @@ To follow ongoing development and planned features for DualShock and DualSense s
 [🔗 View the Roadmap on GitHub Projects](https://github.com/users/rafaelvaloto/projects/2)
 
 ---
-
-## Contributions
-Thanks to,
-
-[DualSense on Windows API](https://github.com/Ohjurot/DualSense-Windows) library, which facilitated the development of this plugin.
-
-[Nielk1 on GIST](https://gist.github.com/Nielk1/6d54cc2c00d2201ccb8c2720ad7538db) code, which facilitated the development of this plugin.
-
-[DualSenseAPI](https://github.com/BadMagic100/DualSenseAPI/tree/master) library, which facilitated the development of this plugin.
-
-[flok pydualsense](https://github.com/flok/pydualsense) library, which facilitated the development of this plugin.
