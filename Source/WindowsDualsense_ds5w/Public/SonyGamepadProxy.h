@@ -8,6 +8,7 @@
 #include "UObject/Object.h"
 #include "Core/Enums/EDeviceCommons.h"
 #include "Core/Enums/EDeviceConnection.h"
+#include "Windows/WindowsApplication.h"
 #include "SonyGamepadProxy.generated.h"
 
 
@@ -23,7 +24,17 @@ class WINDOWSDUALSENSE_DS5W_API USonyGamepadProxy : public UObject
 
 public:
 	static FGenericPlatformInputDeviceMapper PlatformInputDeviceMapper;
-	
+
+	/**
+	 * Remaps the specified gamepad ID to a new user and updates the old user's settings accordingly.
+	 *
+	 * This method ensures that the controller is reassigned from the old user to the new user
+	 * and notifies the input device mapper about the pairing change.
+	 *
+	 * @param GamepadId The ID of the gamepad to be reassigned.
+	 * @param UserId The ID of the new user to whom the gamepad is being assigned.
+	 * @param OldUser The ID of the previous user who was associated with the gamepad.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "SonyGamepad: Remap Device from User")
 	static void RemapControllerIdToUser(int32 GamepadId, int32 UserId, int32 OldUser);
 	

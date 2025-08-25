@@ -4,10 +4,11 @@
 
 
 #include "SonyGamepadProxy.h"
+#include "Windows/WindowsApplication.h"
+#include "Windows/WindowsPlatformApplicationMisc.h"
+#include "Misc/CoreDelegates.h"
 #include "Core/DeviceContainerManager.h"
 
-
-class UDeviceSettings;
 
 void USonyGamepadProxy::RemapControllerIdToUser(int32 GamepadId, int32 UserId, int32 OldUser)
 {
