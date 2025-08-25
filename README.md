@@ -129,21 +129,33 @@ Allows you to switch which controller is associated with each player during game
 
 ![Edit > Project Settings > Plugins > Sony Gamepad Settings](Images/RemapRuntime.png)
 
-## Contributors ✨
+## Project References
 
-<!-- ALL-CONTRIBUTORS-LIST:START -->
-| [<img src="https://avatars.githubusercontent.com/u/60618478?v=4" width="70px;"/><br /><sub><b>@theadamrippon</b></sub>](https://github.com/theadamrippon) | [<img src="https://avatars.githubusercontent.com/u/6501602?v=4" width="70px;"/><br /><sub><b>@Loriborn</b></sub>](https://github.com/Loriborn) | [<img src="https://avatars.githubusercontent.com/u/63568268?v=4" width="70px;"/><br /><sub><b>@Deooed</b></sub>](https://github.com/Deooed) |
-|:------------------------------------------------------:|:----------------------------------------------------------:|:---------------------------------------------------------:|
-|                             💻                          |                        💻 💡                               |                            💻                             |
-<!-- ALL-CONTRIBUTORS-LIST:END -->
+This project is inspired by, or partially utilizes knowledge and techniques from the following projects:
 
-[DualSense on Windows API](https://github.com/Ohjurot/DualSense-Windows), [Nielk1 on GIST](https://gist.github.com/Nielk1/6d54cc2c00d2201ccb8c2720ad7538db), [DualSenseAPI](https://github.com/BadMagic100/DualSenseAPI/tree/master), [flok pydualsense](https://github.com/flok/pydualsense).
+- [DualSense on Windows API](https://github.com/Ohjurot/DualSense-Windows)
+- [Nielk1 on GIST](https://gist.github.com/Nielk1/6d54cc2c00d2201ccb8c2720ad7538db)
+- [DualSenseAPI](https://github.com/BadMagic100/DualSenseAPI/tree/master)
+- [flok pydualsense](https://github.com/flok/pydualsense)
+
+Special thanks to these projects for their documentation and community efforts!
 
 ---
+
+## Contributors ✨
+
+Thanks go to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START -->
+| [<img src="https://avatars.githubusercontent.com/u/60618478?v=4" width="70px;"/><br /><sub><b>@theadamrippon</b></sub>](https://github.com/theadamrippon) | [<img src="https://avatars.githubusercontent.com/u/6501602?v=4" width="70px;"/><br /><sub><b>@Loriborn</b></sub>](https://github.com/Loriborn) | [<img src="https://avatars.githubusercontent.com/u/63568268?v=4" width="70px;"/><br /><sub><b>@Deooed</b></sub>](https://github.com/Deooed) | [<img src="https://avatars.githubusercontent.com/u/225209063?v=4" width="70px;"/><br /><sub><b>@freya6602</b></sub>](https://github.com/freya6602) | [<img src="https://avatars.githubusercontent.com/u/227436357?v=4" width="70px;"/><br /><sub><b>@elstricher-sys</b></sub>](https://github.com/elstricher-sys) |
+|:------------------------------------------------------:|:----------------------------------------------------------:|:---------------------------------------------------------:|:--------------------------------------------------------------:|:----------------------------------------------------------------:|
+|                             💻                          |                        💻 💡                               |                            💻                             |                            🐛                                 |                              🐛                               |
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+---
+
 ## 📍 Roadmap
 
 To follow ongoing development and planned features for DualShock and DualSense support, please check our project roadmap:
 
 [🔗 View the Roadmap on GitHub Projects](https://github.com/users/rafaelvaloto/projects/2)
-
----
