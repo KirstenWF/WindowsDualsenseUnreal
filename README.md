@@ -131,12 +131,11 @@ Allows you to switch which controller is associated with each player during game
 
 ## Contributors ✨
 
-Thanks go to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
-
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- ALL-CONTRIBUTORS-LIST:START -->
+| [<img src="https://avatars.githubusercontent.com/u/60618478?v=4" width="70px;"/><br /><sub><b>@theadamrippon</b></sub>](https://github.com/theadamrippon) | [<img src="https://avatars.githubusercontent.com/u/6501602?v=4" width="70px;"/><br /><sub><b>@Loriborn</b></sub>](https://github.com/Loriborn) | [<img src="https://avatars.githubusercontent.com/u/63568268?v=4" width="70px;"/><br /><sub><b>@Deooed</b></sub>](https://github.com/Deooed) |
+|:------------------------------------------------------:|:----------------------------------------------------------:|:---------------------------------------------------------:|
+|                             💻                          |                        💻 💡                               |                            💻                             |
 <!-- ALL-CONTRIBUTORS-LIST:END -->
-
-
 
 [DualSense on Windows API](https://github.com/Ohjurot/DualSense-Windows), [Nielk1 on GIST](https://gist.github.com/Nielk1/6d54cc2c00d2201ccb8c2720ad7538db), [DualSenseAPI](https://github.com/BadMagic100/DualSenseAPI/tree/master), [flok pydualsense](https://github.com/flok/pydualsense).
 
