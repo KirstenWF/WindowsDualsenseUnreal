@@ -1,5 +1,3 @@
-
-
 <h1 align="center">Windows Dualsense Unreal Plugin</h1>
 
 <p align="center">
@@ -19,7 +17,7 @@ Integrate all the features of Sony's DualSense™ controller into your Unreal En
 <a href="https://github.com/rafaelvaloto/WindowsDualsenseUnreal/blob/main/LICENSE">
     <img src="https://img.shields.io/github/license/rafaelvaloto/WindowsDualsenseUnreal?style=for-the-badge" alt="Licença">
 </a>
-<img src="https://img.shields.io/badge/Unreal%20Engine-5.2~5.6-blue?style=for-the-badge&logo=unrealengine" alt="Unreal Engine 5.x">
+<img src="https://img.shields.io/badge/Unreal%20Engine-5.2~5.6-blue?style=for-the-badge&logo=unrealengine" alt="Unreal Engine 5.x"> <br>
 <img src="https://img.shields.io/badge/Platform-Windows-blue?style=for-the-badge&logo=windows" alt="Platform: Windows">
 </p>
 
