@@ -19,7 +19,7 @@ Integre todos os recursos do controle DualSense™ da Sony no seu projeto Unreal
 <img src="https://img.shields.io/badge/Platform-Windows-blue?style=for-the-badge&logo=windows" alt="Platform: Windows"><br/>
 <img src="https://img.shields.io/badge/Unreal%20Engine-5.2~5.6-blue?style=for-the-badge&logo=unrealengine" alt="Unreal Engine 5.x">
 
----
+
 
 ## 📋 Índice
 
@@ -40,7 +40,7 @@ Este é um plugin para a Unreal Engine que permite a comunicação nativa com os
 
 O objetivo é preencher a lacuna deixada pelo suporte genérico a controles no Windows, dando aos desenvolvedores acesso direto às features que tornam os controles da Sony tão imersivos.
 
----
+
 
 ## 🚀 Começando
 
@@ -83,13 +83,13 @@ Reinicie o Unreal Engine quando solicitado.
 
 🎮 Suporte a Múltiplos Controles: Gerencia até 4 controles DualSense conectados simultaneamente.
 
----
+
 
 ## 🎬 Demonstração
 
 [Veja vídeo de uso](https://www.youtube.com/watch?v=GrCa5s6acmo)
 
----
+
 
 ## 💻 Uso Básico
 
@@ -152,19 +152,19 @@ No seu GameMode, utilize o evento PostLogin para criar e configurar até 4 jogad
 
 ![Unreal Editor Blueprint](Images/Multiplayer.png)
 
----
+
 
 ## 🤝 Como Contribuir
 
 Contribuições são bem-vindas! Se você tiver ideias, sugestões ou correções, sinta-se à vontade para abrir uma *Issue* ou enviar um *Pull Request*.
 
----
+
 
 ## 📄 Licença
 
 Este projeto é distribuído sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
 
----
+
 
 ## ⭐ Créditos e Agradecimentos
 
