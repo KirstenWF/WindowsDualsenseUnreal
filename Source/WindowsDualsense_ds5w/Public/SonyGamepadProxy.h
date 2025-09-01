@@ -24,20 +24,6 @@ class WINDOWSDUALSENSE_DS5W_API USonyGamepadProxy : public UObject
 
 public:
 	static FGenericPlatformInputDeviceMapper PlatformInputDeviceMapper;
-
-	/**
-	 * Remaps the specified gamepad ID to a new user and updates the old user's settings accordingly.
-	 *
-	 * This method ensures that the controller is reassigned from the old user to the new user
-	 * and notifies the input device mapper about the pairing change.
-	 *
-	 * @param GamepadId The ID of the gamepad to be reassigned.
-	 * @param UserId The ID of the new user to whom the gamepad is being assigned.
-	 * @param OldUser The ID of the previous user who was associated with the gamepad.
-	 */
-	UFUNCTION(BlueprintCallable, Category = "SonyGamepad: Remap Device from User")
-	static void RemapControllerIdToUser(int32 GamepadId, int32 UserId, int32 OldUser);
-	
 	/**
 	 * Checks if the DualSense or DualShock device with the specified Controller ID is connected.
 	 *
@@ -153,4 +139,21 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "SonyGamepad: Dualsense or DualShock or Touch, Gyroscope and Accelerometer")
 	static void EnableGyroscopeValues(int32 ControllerId, bool bEnableGyroscope);
+
+
+	/**
+	 * Remaps the specified gamepad ID to a new user and updates the old user's settings accordingly.
+	 *
+	 * This method ensures that the controller is reassigned from the old user to the new user
+	 * and notifies the input device mapper about the pairing change.
+	 *
+	 * @param GamepadId The ID of the gamepad to be reassigned.
+	 * @param UserId The ID of the new user to whom the gamepad is being assigned.
+	 * @param OldUser The ID of the previous user who was associated with the gamepad.
+	 */
+	UE_DEPRECATED(
+		5.1, "Methods refactored and deprecated as of plugin version v1.2.1.")
+	UFUNCTION(BlueprintCallable, Category = "SonyGamepad: Remap Device from User",
+		meta=(DeprecatedFunction, DeprecationMessage="Use GamepadCoOp Plugin"))
+	static void RemapControllerIdToUser(int32 GamepadId, int32 UserId, int32 OldUser) {}
 };

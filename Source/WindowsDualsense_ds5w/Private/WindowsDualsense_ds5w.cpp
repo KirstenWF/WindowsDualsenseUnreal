@@ -27,23 +27,7 @@ void FWindowsDualsense_ds5wModule::ShutdownModule()
 TSharedPtr<IInputDevice> FWindowsDualsense_ds5wModule::CreateInputDevice(
 	const TSharedRef<FGenericApplicationMessageHandler>& InCustomMessageHandler)
 {
-	DeviceInstance = MakeShareable(new DeviceManager(InCustomMessageHandler, true));
-
-	const UDeviceContainerManager* DualSenseLibraryManager = UDeviceContainerManager::Get();
-	if (!DualSenseLibraryManager)
-	{
-		UE_LOG(LogTemp, Error, TEXT("DualSense: Failed to create DualSense Library Manager"));
-		return DeviceInstance;
-	}
-
-	DualSenseLibraryManager->CreateLibraryInstances();
-	for (const TPair<int32, ISonyGamepadInterface*>& Pair : DualSenseLibraryManager->GetAllocatedDevicesMap())
-	{
-		DeviceInstance->SetController(Pair.Value->GetUserId(), FInputDeviceId::CreateFromInternalId(Pair.Key));
-	}
-
-	DeviceInstance->SetLazyLoading(false);
-	return DeviceInstance;
+	return MakeShareable(new DeviceManager(InCustomMessageHandler, false));
 }
 
 void FWindowsDualsense_ds5wModule::RegisterCustomKeys()

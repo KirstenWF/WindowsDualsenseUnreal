@@ -10,7 +10,6 @@
 #include <hidsdi.h>
 #include <setupapi.h>
 #include "Core/Structs/FDeviceContext.h"
-#include "Helpers/ValidateHelpers.h"
 #include "Windows/HideWindowsPlatformTypes.h"
 
 const UINT32 UDeviceHIDManager::CRCSeed = 0xeada2d49;
@@ -117,9 +116,7 @@ bool UDeviceHIDManager::FindDevices(TArray<FDeviceContext>& Devices)
 							}
 							Context.ConnectionType = Bluetooth;
 						}
-						
 						Devices.Add(Context);
-						UE_LOG(LogTemp, Log, TEXT("HIDManager: Found at %s"), Context.Path);
 					}
 				}
 			}

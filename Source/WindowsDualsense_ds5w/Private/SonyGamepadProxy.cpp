@@ -4,27 +4,8 @@
 
 
 #include "SonyGamepadProxy.h"
-#include "Windows/WindowsApplication.h"
-#include "Windows/WindowsPlatformApplicationMisc.h"
 #include "Misc/CoreDelegates.h"
 #include "Core/DeviceContainerManager.h"
-
-
-void USonyGamepadProxy::RemapControllerIdToUser(int32 GamepadId, int32 UserId, int32 OldUser)
-{
-	if (TMap<int32, int32> MapUsers = UDeviceContainerManager::GetSettings(); MapUsers.Contains(UserId))
-	{
-		const int32 OldDevice = MapUsers[UserId];
-		UDeviceContainerManager::Get()->SetSettings(OldUser, OldDevice);
-	}
-	
-	UDeviceContainerManager::Get()->SetSettings(UserId, GamepadId);
-
-	const FPlatformUserId User = FPlatformUserId::CreateFromInternalId(UserId);
-	const FPlatformUserId Old  = FPlatformUserId::CreateFromInternalId(OldUser);
-	const FInputDeviceId Device = FInputDeviceId::CreateFromInternalId(GamepadId);
-	PlatformInputDeviceMapper.Get().GetOnInputDevicePairingChange().Broadcast(Device, User, Old);
-}
 
 bool USonyGamepadProxy::DeviceIsConnected(int32 ControllerId)
 {
@@ -32,12 +13,6 @@ bool USonyGamepadProxy::DeviceIsConnected(int32 ControllerId)
 	{
 		return false;
 	}
-
-	PlatformInputDeviceMapper.Get().GetOnInputDeviceConnectionChange().Broadcast(
-		EInputDeviceConnectionState::Connected,
-		FPlatformUserId::CreateFromInternalId(UDeviceContainerManager::ToMap(ControllerId)),
-		FInputDeviceId::CreateFromInternalId(UDeviceContainerManager::ToMap(ControllerId))
-	);
 	return true;
 }
 
@@ -75,7 +50,6 @@ bool USonyGamepadProxy::DeviceReconnect(int32 ControllerId)
 
 bool USonyGamepadProxy::DeviceDisconnect(int32 ControllerId)
 {
-	UDeviceContainerManager::Get()->RemoveLibraryInstance(UDeviceContainerManager::ToMap(ControllerId));
 	return true;
 }
 

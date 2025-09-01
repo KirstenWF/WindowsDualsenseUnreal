@@ -7,6 +7,7 @@
 #include "CoreMinimal.h"
 #include "FOutputContext.h"
 #include "Core/Enums/EDeviceConnection.h"
+#include "GameFramework/InputSettings.h"
 #include "FDeviceContext.generated.h"
 
 /**
@@ -140,4 +141,30 @@ struct FDeviceContext
 	 * initialization, compatibility checks, and tailored input/output processing.
 	 */
 	EDeviceType DeviceType;
+	/**
+	 * @brief Uniquely identifies an input device within the system.
+	 *
+	 * This identifier is used to distinguish individual devices connected to
+	 * the system, ensuring that each device can be accurately managed and tracked.
+	 *
+	 * Essential for scenarios where multiple input devices are connected,
+	 * enabling seamless interaction and device-specific operations.
+	 */
+	FInputDeviceId UniqueInputDeviceId;
+	/**
+	 * @brief Represents the unique identifier for a platform-specific user.
+	 *
+	 * This variable is used to distinguish and manage users on a specific platform.
+	 * It ensures that user-related data and operations are correctly assigned to the
+	 * appropriate platform user, allowing seamless integration and user management
+	 * in multi-user or multi-platform environments.
+	 */
+	FPlatformUserId UniquePlatformUserId;
+
+	FDeviceContext(): Handle(nullptr), Path{}, Buffer{}, BufferDS4{}, BufferOutput{}, IsConnected(false),
+	                  ConnectionType(), DeviceType(),
+	                  UniqueInputDeviceId(),
+	                  UniquePlatformUserId()
+	{
+	}
 };

@@ -694,7 +694,7 @@ void UDualSenseLibrary::StopAll()
 	HidOutput->Feature.VibrationMode = 0xFF;
 	HidOutput->Feature.FeatureMode = 0xF7;
 	HidOutput->PlayerLed.Brightness = 0x00;
-	if (ControllerID == 0)
+	if (ControllerID == 0 || ControllerID > 3)
 	{
 		HidOutput->Lightbar = {0, 0, 255, 255};
 		HidOutput->PlayerLed.Led = static_cast<unsigned char>(ELedPlayerEnum::One);

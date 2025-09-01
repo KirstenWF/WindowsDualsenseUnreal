@@ -15,12 +15,38 @@
  * cleanup, and access control for the controller devices.
  */
 UCLASS()
-class WINDOWSDUALSENSE_DS5W_API UDeviceContainerManager : public UObject
+class WINDOWSDUALSENSE_DS5W_API UDeviceContainerManager : public UObject, public FTickableGameObject
 {
 	GENERATED_BODY()
 
-	
+
+	/**
+	 * Updates the device container manager at regular intervals by processing connected and
+	 * disconnected devices. It handles device discovery, connection state updates, lifecycle
+	 * management for device libraries, and ensures proper synchronization with previously
+	 * known devices.
+	 *
+	 * @param DeltaTime The time in seconds since the last tick, used to accumulate time for
+	 *                  periodic processing of the device lifecycle and connection state.
+	 */
 public:
+	virtual void Tick(float DeltaTime) override;
+	virtual TStatId GetStatId() const override
+	{
+		RETURN_QUICK_DECLARE_CYCLE_STAT(UDeviceContainerManager, STATGROUP_Tickables);
+	}
+	virtual bool IsTickableInEditor() const override
+	{
+		return true;
+	}
+	virtual bool IsTickable() const override
+	{
+		return true;
+	}
+
+	bool bIsDeviceDetectionInProgress = false;
+	/**
+	 * Destroys the device container manager and cleans up any allocated resources. This method
 	/**
 	 * Retrieves the static instance of the UDeviceContainerManager class. This method
 	 * ensures that only a single instance of the manager class is created and provides
@@ -31,30 +57,12 @@ public:
 	 */
 	static UDeviceContainerManager* Get();
 	/**
-	 * Converts a provided gamepad index to a mapped identifier based on settings or returns the input index
-	 * if no mapping is found. This function utilizes predefined gamepad names and checks for mappings
-	 * in the device settings.
-	 *
-	 * @param Index The index of the Sony gamepad to map.
-	 * @return The mapped identifier if found, otherwise the original index.
-	 */
-	static int32 ToMap(int32 Index);
-	/**
 	 * Removes all existing library instances managed by the device container. This method
 	 * is responsible for cleaning up and unloading all currently allocated Sony gamepad
 	 * controllers' library resources, ensuring proper resource management and preventing
 	 * potential memory leaks.
 	 */
 	static void RemoveAllLibraryInstance();
-	/**
-	 * Removes the library instance associated with the specified controller ID. This method
-	 * is used to unload and clean up resources associated with the Sony gamepad controller
-	 * corresponding to the given ID, ensuring proper resource management and preventing memory leaks.
-	 *
-	 * @param ControllerId The unique identifier of the controller whose library instance
-	 *                     needs to be removed.
-	 */
-	static void RemoveLibraryInstance(int32 ControllerId);
 	/**
 	 * Retrieves the library instance associated with a specific Sony gamepad controller,
 	 * identified by its unique controller ID. This method ensures that the appropriate
@@ -79,12 +87,6 @@ public:
 	 */
 	static ISonyGamepadInterface* GetLibraryOrReconnect(int32 ControllerId);
 	/**
-	 * Initializes and creates library instances for managing Sony gamepad controllers.
-	 * This method is responsible for setting up all necessary resources and ensuring
-	 * that the library instances are properly configured and ready for operation.
-	 */
-	static void CreateLibraryInstances();
-	/**
 	 * Retrieves the total number of currently allocated device library instances.
 	 * This method provides a count of the devices being managed by the container,
 	 * useful for monitoring and ensuring proper resource allocation.
@@ -97,33 +99,14 @@ public:
 	 * keys with instances implementing the Sony gamepad interface, allowing access to the currently
 	 * managed devices.
 	 */
-	static TMap<int32, ISonyGamepadInterface*> GetAllocatedDevicesMap();
-	/**
-	 * Retrieves a map of settings where keys and values are represented as integer pairs.
-	 * This method is used to access configuration or preference settings in a structured format.
-	 *
-	 * @return A TMap containing integer keys and their respective integer values representing settings.
-	 */
-	static TMap<int32, int32> GetSettings()
-	{
-		return Settings;
-	}
-	/**
-	 * Updates the settings for a specific controller associated with a specified user.
-	 * This function configures and applies necessary configuration changes for the device.
-	 *
-	 * @param UserId The unique identifier of the user.
-	 * @param ControllerId The unique identifier of the controller associated with the user.
-	 */
-	static void SetSettings(int32 UserId, int32 ControllerId)
-	{
-		if (Settings.Contains(UserId))
-		{
-			Settings[UserId] = ControllerId;
-		}
-	}
+	static TMap<FInputDeviceId, ISonyGamepadInterface*> GetAllocatedDevicesMap();
 	
 private:
+	/**
+	 * A floating-point variable that represents the change or difference in the accumulator value over time.
+	 * Typically used to measure incremental adjustments or deltas in processing or calculations.
+	 */
+	float AccumulatorDelta = 0.0f;
 	/**
 	 * A static instance of the UDeviceContainerManager, serving as the singleton instance
 	 * for managing device library instances of Sony gamepad controllers. This variable
@@ -132,28 +115,15 @@ private:
 	 */
 	static UDeviceContainerManager* Instance;
 	/**
-	 * A static map that stores key-value pairs of integers used for configuration
-	 * or settings management within the application. Provides a mechanism for
-	 * efficient lookup and storage of integer-based settings.
+	 * A static map that holds associations between input device IDs and their corresponding Sony gamepad interface instances.
+	 * This map is used to store and manage the lifecycle of gamepad interface objects, enabling efficient lookup and access
+	 * to the respective implementations for handling Sony gamepad interactions.
 	 */
-	static TMap<int32, int32> Settings;
+	static TMap<FInputDeviceId, ISonyGamepadInterface*> LibraryInstances;
 	/**
-	 * A static map that stores instances of Sony gamepad interfaces, identified by a unique
-	 * controller ID. This map is used to manage and provide access to the library instances
-	 * of Sony gamepad controllers, enabling interaction and control over the corresponding
-	 * input devices. Each entry in the map associates a unique integer ID with a pointer
-	 * to the ISonyGamepadInterface implementation for that controller.
+	 * A static map that associates device paths represented as strings with unique input device
+	 * identifiers. This serves as a lookup mechanism to manage and track known device connections
+	 * effectively within the system.
 	 */
-	static TMap<int32, ISonyGamepadInterface*> LibraryInstances;
-	/**
-	 * Creates a new library instance for managing the Sony gamepad controller specified
-	 * by the given Controller ID. This method initializes and allocates the resources
-	 * necessary for the specified controller, allowing it to be accessed and interacted with.
-	 *
-	 * @param ControllerID The unique identifier of the Sony gamepad controller for which
-	 *                     the library instance should be created.
-	 * @return A pointer to the newly created ISonyGamepadInterface instance associated with
-	 *         the specified controller ID, or nullptr if the creation fails.
-	 */
-	static ISonyGamepadInterface* CreateLibraryInstance(int32 ControllerID);
+	static TMap<FString, FInputDeviceId> KnownDevicePaths;
 };

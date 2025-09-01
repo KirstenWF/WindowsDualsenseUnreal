@@ -6,7 +6,6 @@
 #include "Core/DeviceContainerManager.h"
 #include "Core/Interfaces/SonyGamepadTriggerInterface.h"
 #include "Windows/WindowsApplication.h"
-#include "Windows/WindowsPlatformApplicationMisc.h"
 #include "Misc/CoreDelegates.h"
 
 class UDualSenseLibrary;
@@ -14,19 +13,17 @@ class UDualSenseLibrary;
 DeviceManager::DeviceManager(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
                              bool Lazily): MessageHandler(InMessageHandler)
 {
-	LazyLoading = Lazily;
-	
-	DeviceMapper = FWindowsPlatformApplicationMisc::CreatePlatformInputDeviceManager();
+	LazyLoading  = Lazily;
 	FCoreDelegates::OnUserLoginChangedEvent.AddRaw(this, &DeviceManager::OnUserLoginChangedEvent);
-	DeviceMapper->Get().GetOnInputDeviceConnectionChange().AddRaw(this, &DeviceManager::OnConnectionChange);
-	DeviceMapper->Get().GetOnInputDevicePairingChange().AddRaw(this, &DeviceManager::OnChangedPairing);
 }
 
 DeviceManager::~DeviceManager()
 {
 	FCoreDelegates::OnUserLoginChangedEvent.RemoveAll(this);
-	DeviceMapper->Get().GetOnInputDeviceConnectionChange().RemoveAll(this);
-	DeviceMapper->Get().GetOnInputDevicePairingChange().RemoveAll(this);
+}
+
+void DeviceManager::SendControllerEvents()
+{
 }
 
 void DeviceManager::Tick(float DeltaTime)
@@ -43,15 +40,14 @@ void DeviceManager::Tick(float DeltaTime)
 	}
 	
 	PollAccumulator = 0.0f;
-	
 	TArray<FInputDeviceId> OutInputDevices;
 	OutInputDevices.Reset();
 
-	DeviceMapper->Get().GetAllConnectedInputDevices(OutInputDevices);
+	IPlatformInputDeviceMapper::Get().GetAllConnectedInputDevices(OutInputDevices);
 	for (const FInputDeviceId& DeviceId : OutInputDevices)
 	{
-		FInputDeviceId Device = FInputDeviceId::CreateFromInternalId(DeviceId.GetId());
-		FPlatformUserId UserId = IPlatformInputDeviceMapper::Get().GetUserForInputDevice(Device);
+		const FInputDeviceId Device = FInputDeviceId::CreateFromInternalId(DeviceId.GetId());
+		const FPlatformUserId UserId = IPlatformInputDeviceMapper::Get().GetUserForInputDevice(Device);
 		if (const int32 ControllerId = FPlatformMisc::GetUserIndexForPlatformUser(UserId); ControllerId == -1)
 		{
 			continue;
@@ -60,16 +56,9 @@ void DeviceManager::Tick(float DeltaTime)
 		ISonyGamepadInterface* Gamepad = UDeviceContainerManager::Get()->GetLibraryInstance(DeviceId.GetId());
 		if (!Gamepad)
 		{
-			Disconnect(DeviceId);
 			continue;
 		}
 		
-		if (!UDeviceContainerManager::Get()->GetSettings().Contains(DeviceId.GetId()))
-		{
-			Disconnect(DeviceId);
-			continue;
-		}
-
 		FString ContextDrive = TEXT("DualSense");
 		if (Gamepad->GetDeviceType() == EDeviceType::DualShock4)
 		{
@@ -79,13 +68,9 @@ void DeviceManager::Tick(float DeltaTime)
 		{
 			ContextDrive = TEXT("DualSenseEdge");
 		}
-	
-		FInputDeviceScope InputScope(this, TEXT("DeviceManager"), Device.GetId(), ContextDrive);
-		if (!Gamepad->UpdateInput(MessageHandler, UserId, Device))
-		{
-			Disconnect(DeviceId);
-			UDeviceContainerManager::Get()->RemoveLibraryInstance(DeviceId.GetId());
-		}
+		
+		FInputDeviceScope InputScope(this, TEXT("DeviceManager.WindowsDualsense"), DeviceId.GetId(), ContextDrive);
+		Gamepad->UpdateInput(MessageHandler, UserId, Device);
 	}
 }
 
@@ -162,69 +147,22 @@ void DeviceManager::ResetLightColor(const int32 ControllerId)
 	Gamepad->SetLightbar(FColor::Blue);
 }
 
-void DeviceManager::Reconnect(const FInputDeviceId& Device) const
-{
-	if (LazyLoading) return;
-
-	if (DeviceMapper->Get().GetInputDeviceConnectionState(Device) == EInputDeviceConnectionState::Disconnected)
-	{
-		DeviceMapper->Get().Internal_SetInputDeviceConnectionState(Device, EInputDeviceConnectionState::Connected);
-	}
-}
-
-void DeviceManager::Disconnect(const FInputDeviceId& Device) const
-{
-	if (LazyLoading) return;
-
-	if (DeviceMapper->Get().GetInputDeviceConnectionState(Device) == EInputDeviceConnectionState::Connected)
-	{
-		DeviceMapper->Get().Internal_SetInputDeviceConnectionState(Device, EInputDeviceConnectionState::Disconnected);
-	}
-}
-
-void DeviceManager::OnConnectionChange(EInputDeviceConnectionState Connected, FPlatformUserId PlatformUserId,
-											  FInputDeviceId InputDeviceId) const
-{
-	const bool bIsConnected = (Connected == EInputDeviceConnectionState::Connected);
-	if (DeviceMapper->Get().GetInputDeviceConnectionState(InputDeviceId) != EInputDeviceConnectionState::Connected &&
-		bIsConnected)
-	{
-		DeviceMapper->Get().Internal_MapInputDeviceToUser(InputDeviceId, PlatformUserId, EInputDeviceConnectionState::Connected);
-		return;
-	}
-
-	if (DeviceMapper->Get().GetInputDeviceConnectionState(InputDeviceId) == EInputDeviceConnectionState::Connected &&
-		!bIsConnected)
-	{
-		DeviceMapper->Get().Internal_MapInputDeviceToUser(InputDeviceId, PlatformUserId, EInputDeviceConnectionState::Disconnected);
-	}
-}
-
-bool bIsChange = false;
-void DeviceManager::OnChangedPairing(const FInputDeviceId ControllerId, const FPlatformUserId NewUser, const FPlatformUserId OldUer) const
-{
-	if (bIsChange)
-	{
-		return;
-	}
-	bIsChange = true;
-	
-	DeviceMapper->Get().Internal_ChangeInputDeviceUserMapping(ControllerId, NewUser, OldUer);
-	DeviceMapper->Get().Internal_SetInputDeviceConnectionState(ControllerId, EInputDeviceConnectionState::Connected);
-	bIsChange = false;
-}
 void DeviceManager::OnUserLoginChangedEvent(bool bLoggedIn, int32 UserId, int32 UserIndex) const
 {
-	if (!bLoggedIn) return;
-
-	const FInputDeviceId Device = FInputDeviceId::CreateFromInternalId(UserId);
-	const FPlatformUserId User = FPlatformMisc::GetPlatformUserForUserIndex(UserIndex);
-	
-	if (const FPlatformUserId& UserPair = DeviceMapper->Get().GetUserForInputDevice(Device); UserPair != User)
+	const FPlatformUserId PlatformUserId = FPlatformUserId::CreateFromInternalId(UserId);
+	if (!bLoggedIn)
 	{
-		if (DeviceMapper->Get().GetInputDeviceConnectionState(Device) != EInputDeviceConnectionState::Connected)
+		TArray<FInputDeviceId> OutInputDevices;
+		OutInputDevices.Reset();
+
+		IPlatformInputDeviceMapper::Get().GetAllInputDevicesForUser(PlatformUserId, OutInputDevices);
+		for (const FInputDeviceId& DeviceId : OutInputDevices)
 		{
-			DeviceMapper->Get().Internal_MapInputDeviceToUser(Device, User, EInputDeviceConnectionState::Connected);
+			IPlatformInputDeviceMapper::Get().Internal_MapInputDeviceToUser(DeviceId, PlatformUserId, EInputDeviceConnectionState::Disconnected);
 		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("DualSense: DeviceManager User %d logged in."), UserId);
 	}
 }
