@@ -147,13 +147,6 @@ void FHIDDeviceInfo::Read(FDeviceContext* Context)
 		UE_LOG(LogTemp, Error, TEXT("Dualsense: DeviceContext->Connected, false"));
 		return;
 	}
-
-	const size_t InputReportLength = Context->ConnectionType == Bluetooth ? 78 : 64;
-	if (sizeof(Context->Buffer) < InputReportLength)
-	{
-		InvalidateHandle(Context);
-		return;
-	}
 	
 	HidD_FlushQueue(Context->Handle);
 
@@ -170,12 +163,26 @@ void FHIDDeviceInfo::Read(FDeviceContext* Context)
 	DWORD BytesRead = 0;
 	if (Context->ConnectionType == Bluetooth && Context->DeviceType == EDeviceType::DualShock4)
 	{
+		const size_t InputReportLength = Context->ConnectionType == Bluetooth ? 547 : 64;
+		if (sizeof(Context->BufferDS4) < InputReportLength)
+		{
+			InvalidateHandle(Context);
+			return;
+		}
+		
 		const EPollResult Response = PollTick(Context->Handle, Context->BufferDS4, InputReportLength,
 									 Policy, State, BytesRead);
 		if (Response == EPollResult::Disconnected)
 		{
 			InvalidateHandle(Context);
 		}
+		return;
+	}
+
+	const size_t InputReportLength = Context->ConnectionType == Bluetooth ? 78 : 64;
+	if (sizeof(Context->Buffer) < InputReportLength)
+	{
+		InvalidateHandle(Context);
 		return;
 	}
 
