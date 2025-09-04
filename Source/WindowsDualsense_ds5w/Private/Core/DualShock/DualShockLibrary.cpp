@@ -5,10 +5,16 @@
 
 #include "Core/DualShock/DualShockLibrary.h"
 #include <Windows.h>
-#include "Core/DeviceHIDManager.h"
+#include "Core/PlayStationOutputComposer.h"
 #include "InputCoreTypes.h"
+#include "Core/HIDDeviceInfo.h"
 #include "Core/Structs/FOutputContext.h"
 #include "Helpers/ValidateHelpers.h"
+
+void UDualShockLibrary::Disconnect()
+{
+	HIDDeviceContexts.IsConnected = false;
+}
 
 void UDualShockLibrary::Settings(const FSettings<FFeatureReport>& Settings)
 {
@@ -29,11 +35,7 @@ bool UDualShockLibrary::InitializeLibrary(const FDeviceContext& Context)
 void UDualShockLibrary::ShutdownLibrary()
 {
 	ButtonStates.Reset();
-	UDeviceHIDManager::FreeContext(&HIDDeviceContexts);
-}
-
-void UDualShockLibrary::Reconnect()
-{
+	UPlayStationOutputComposer::FreeContext(&HIDDeviceContexts);
 }
 
 bool UDualShockLibrary::IsConnected()
@@ -48,7 +50,7 @@ void UDualShockLibrary::SendOut()
 		return;
 	}
 	
-	UDeviceHIDManager::OutputDualShock(&HIDDeviceContexts);
+	UPlayStationOutputComposer::OutputDualShock(&HIDDeviceContexts);
 }
 
 void UDualShockLibrary::CheckButtonInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
@@ -69,11 +71,15 @@ void UDualShockLibrary::CheckButtonInput(const TSharedRef<FGenericApplicationMes
 	ButtonStates.Add(ButtonName, IsButtonPressed);
 }
 
-bool UDualShockLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
+void UDualShockLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
 	const FPlatformUserId UserId, const FInputDeviceId InputDeviceId)
 {
-	if (UDeviceHIDManager::GetDeviceInputState(&HIDDeviceContexts))
-	{
+		FDeviceContext* Context = &HIDDeviceContexts;
+		AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [NewContext = MoveTemp(Context)]()
+		{
+				FHIDDeviceInfo::Read(NewContext);
+		});
+		
 		const unsigned char* HIDInput;
 		if (HIDDeviceContexts.ConnectionType == Bluetooth)
 		{
@@ -83,7 +89,7 @@ bool UDualShockLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 		{
 			HIDInput = &HIDDeviceContexts.Buffer[1];
 		}
-		
+	
 		// Triggers
 		const bool bLeftTriggerThreshold = HIDInput[0x05] & BTN_LEFT_TRIGGER;
 		const bool bRightTriggerThreshold = HIDInput[0x05] & BTN_RIGHT_TRIGGER;
@@ -176,11 +182,6 @@ bool UDualShockLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FName("PS_Share"), Select);
 		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::SpecialRight, Start);
 		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::SpecialLeft, Select);
-		
-		// UValidateHelpers::PrintBufferAsHex(HIDInput, 78);
-		return true;
-	}
-	return false;
 }
 
 

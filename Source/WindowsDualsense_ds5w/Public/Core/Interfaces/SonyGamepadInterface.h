@@ -39,19 +39,24 @@ class WINDOWSDUALSENSE_DS5W_API ISonyGamepadInterface
 {
 	GENERATED_BODY()
 
-	
+
+	/**
+	 * Retrieves an instance of the Sony gamepad interface.
+	 *
+	 * @return A pointer to the ISonyGamepadInterface instance.
+	 */
 public:
 	virtual ISonyGamepadInterface* Get() = 0;
 	/**
-	 * Pure virtual function that must be implemented by derived classes.
-	 * Used to attempt reconnection with the associated Sony gamepad device.
-	 * Typically, the implementation should ensure the gamepad is reconnected
-	 * and restored to its operational state.
-	 *
-	 * This function is expected to be executed when the connection to the gamepad
-	 * has been lost or is in a disconnected state.
+	 * Disconnects the gamepad from the system.
 	 */
-	virtual void Reconnect() = 0;
+	virtual void Disconnect() = 0;
+	/**
+	 * Pure virtual function that checks the connection status of the gamepad.
+	 *
+	 * @return True if the gamepad is connected, false otherwise.
+	 */
+	virtual bool IsConnected() = 0;
 	/**
 	 * Retrieves the platform user identifier associated with the current gamepad.
 	 *
@@ -59,11 +64,29 @@ public:
 	 */
 	virtual FPlatformUserId GetUserId() = 0;
 	/**
+	 * Retrieves the unique identifier for the input device.
+	 *
+	 * @return The unique identifier associated with the input device.
+	 */
+	virtual FInputDeviceId GetDeviceId() = 0;
+	/**
 	 * Sets the user ID associated with the platform user.
 	 *
 	 * @param User The platform user ID to associate.
 	 */
 	virtual void SetUserId(FPlatformUserId User) = 0;
+	/**
+	 * Sets the device ID for the input device.
+	 *
+	 * @param DeviceId The identifier for the input device to be set.
+	 */
+	virtual void SetDeviceId(FInputDeviceId DeviceId) = 0;
+	/**
+	 * Sets the identifier for the controller to associate it with a specific device or context.
+	 *
+	 * @param ControllerId An integer representing the unique identifier for the controller.
+	 */
+	virtual void SetControllerId(int32 ControllerId) = 0;
 	/**
 	 * Pure virtual function that must be implemented by derived classes.
 	 * Used to attempt reconnection with the associated Sony gamepad device.
@@ -74,12 +97,6 @@ public:
 	 * has been lost or is in a disconnected state.
 	 */
 	virtual FString GetDevicePath() = 0;
-	/**
-	 * Pure virtual function that checks the connection status of the gamepad.
-	 *
-	 * @return True if the gamepad is connected, false otherwise.
-	 */
-	virtual bool IsConnected() = 0;
 	/**
 	 * Retrieves the type of the device.
 	 *
@@ -130,13 +147,6 @@ public:
 	 * ISonyGamepadInterface interface.
 	 */
 	virtual void ShutdownLibrary() = 0;
-	/**
-	 * Sets the identifier for the controller to associate it with a specific device or context.
-	 *
-	 * @param ControllerId An integer representing the unique identifier for the controller.
-	 */
-	virtual void SetControllerId(int32 ControllerId) = 0;
-
 	/**
 	 * Sets the lightbar color and associated timing parameters on the gamepad.
 	 *
@@ -202,11 +212,11 @@ public:
 	 */
 	virtual void SendOut() = 0;
 	/**
-	 * Updates input state for the gamepad.
+	 * Updates the input state for the Sony gamepad interface.
 	 *
-	 * @param InMessageHandler A shared reference to the generic application message handler to process input.
-	 * @param UserId The platform user identifier associated with the device.
-	 * @param InputDeviceId The unique identifier for the input device being updated.
+	 * @param InMessageHandler A shared reference to the message handler responsible for processing input events.
+	 * @param UserId The platform-specific user identifier associated with the input.
+	 * @param InputDeviceId The identifier for the input device being updated.
 	 */
-	virtual bool UpdateInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId) = 0;
+	virtual void UpdateInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId) = 0;
 };

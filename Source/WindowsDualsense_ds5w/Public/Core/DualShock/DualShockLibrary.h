@@ -19,6 +19,7 @@ class WINDOWSDUALSENSE_DS5W_API UDualShockLibrary : public UObject, public ISony
 	GENERATED_BODY()
 
 public:
+	virtual void Disconnect() override;
 	/**
 	 * @brief Configures device settings for a connected device.
 	 *
@@ -32,8 +33,6 @@ public:
 	 */
 	virtual void Settings(const FSettings<FFeatureReport>& Settings) override;
 	virtual void Settings(const FDualShockFeatureReport& Settings);
-	
-	FPlatformUserId DSUserId;
 	/**
 	 * @brief Retrieves the platform user ID associated with the current instance.
 	 *
@@ -43,10 +42,7 @@ public:
 	 *
 	 * @return The platform user ID as an FPlatformUserId object.
 	 */
-	virtual FPlatformUserId GetUserId() override
-	{
-		return DSUserId;
-	}
+	virtual FPlatformUserId GetUserId() override { return DSUserId; }
 	/**
 	 * @brief Associates a platform user ID with the current instance.
 	 *
@@ -58,10 +54,19 @@ public:
 	 *
 	 * @param User The platform user identifier to associate with the instance.
 	 */
-	virtual void SetUserId(FPlatformUserId User) override
-	{
-		DSUserId = User;
-	}
+	virtual void SetUserId(FPlatformUserId User) override { DSUserId = User; }
+	/**
+	 * Retrieves the unique identifier for the input device.
+	 *
+	 * @return The unique identifier associated with the input device.
+	 */
+	virtual FInputDeviceId GetDeviceId() override { return FInputDeviceId::CreateFromInternalId(ControllerID); };
+	/**
+	 * Sets the device ID for the input device.
+	 *
+	 * @param DeviceId The identifier for the input device to be set.
+	 */
+	virtual void SetDeviceId(FInputDeviceId DeviceId) override {};
 	/**
 	 * @brief Initializes the DualSense library with the specified device context.
 	 *
@@ -90,20 +95,6 @@ public:
 	 * Once completed, a log message is generated to confirm the successful shutdown.
 	 */
 	virtual void ShutdownLibrary() override;
-	/**
-	 * @brief Reconnects a DualSense controller to the input system.
-	 *
-	 * The Reconnect method signals the input system to re-establish a connection
-	 * with a DualSense controller, ensuring it is recognized as an active input device.
-	 * This is done by broadcasting a connection change event reflecting the controller's
-	 * connected state.
-	 *
-	 * @details This method triggers a connection event through the input device mapper,
-	 * associating the controller with the appropriate user and input device identifiers.
-	 * It is useful in scenarios where the controller's connection state needs to be reset
-	 * or when manually managing input device connections in the application.
-	 */
-	virtual void Reconnect() override;
 	/**
 	 * @brief Checks if a DualSense device is currently connected.
 	 *
@@ -155,7 +146,7 @@ public:
 	 * @param InputDeviceId The unique identifier of the input device to be updated.
 	 * @return A boolean value indicating whether the input update was successful.
 	 */
-	virtual bool UpdateInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
+	virtual void UpdateInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
 	                         const FPlatformUserId UserId, const FInputDeviceId InputDeviceId) override;
 	
 	/**
@@ -318,6 +309,7 @@ protected:
 	 */
 	static FGenericPlatformInputDeviceMapper PlatformInputDeviceMapper;
 private:
+	FPlatformUserId DSUserId;
 	/**
 	 * @brief Represents the current battery level of a device.
 	 *

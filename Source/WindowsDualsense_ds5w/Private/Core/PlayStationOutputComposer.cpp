@@ -3,211 +3,18 @@
 // Planned Release Year: 2025
 
 
-#include "Core/DeviceHIDManager.h"
-
-#include "Windows/AllowWindowsPlatformTypes.h"
-#include <windows.h>
-#include <hidsdi.h>
-#include <setupapi.h>
+#include "Core/PlayStationOutputComposer.h"
+#include "Core/HIDDeviceInfo.h"
 #include "Core/Structs/FDeviceContext.h"
-#include "Windows/HideWindowsPlatformTypes.h"
 
-const UINT32 UDeviceHIDManager::CRCSeed = 0xeada2d49;
-bool UDeviceHIDManager::FindDevices(TArray<FDeviceContext>& Devices)
+const UINT32 UPlayStationOutputComposer::CRCSeed = 0xeada2d49;
+
+void UPlayStationOutputComposer::FreeContext(FDeviceContext* Context)
 {
-	Devices.Empty();
-	
-	GUID HidGuid;
-	HidD_GetHidGuid(&HidGuid);
-
-	const HDEVINFO DeviceInfoSet = SetupDiGetClassDevs(&HidGuid, nullptr, nullptr,
-	                                                   DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
-	if (DeviceInfoSet == INVALID_HANDLE_VALUE)
-	{
-		UE_LOG(LogTemp, Error, TEXT("HIDManager: Falha ao obter informações dos dispositivos HID."));
-		return false;
-	}
-
-	SP_DEVICE_INTERFACE_DATA DeviceInterfaceData = {};
-	DeviceInterfaceData.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
-
-	TMap<int32, WCHAR> DevicePaths;
-	DevicePaths.Empty();
-	for (DWORD DeviceIndex = 0; SetupDiEnumDeviceInterfaces(DeviceInfoSet, nullptr, &HidGuid, DeviceIndex,
-	                                                        &DeviceInterfaceData); DeviceIndex++)
-	{
-		DWORD RequiredSize = 0;
-
-		SetupDiGetDeviceInterfaceDetail(DeviceInfoSet, &DeviceInterfaceData, nullptr, 0, &RequiredSize, nullptr);
-
-		const auto DetailDataBuffer = static_cast<PSP_DEVICE_INTERFACE_DETAIL_DATA>(malloc(RequiredSize));
-		if (!DetailDataBuffer)
-		{
-			UE_LOG(LogTemp, Error, TEXT("HIDManager: Failed to allocate memory for device details."));
-			continue;
-		}
-		DetailDataBuffer->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
-
-
-		if (SetupDiGetDeviceInterfaceDetail(DeviceInfoSet, &DeviceInterfaceData, DetailDataBuffer, RequiredSize,
-		                                    nullptr, nullptr))
-		{
-			const HANDLE TempDeviceHandle = CreateFileW(
-				DetailDataBuffer->DevicePath,
-				GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, NULL, nullptr
-			);
-
-			if (TempDeviceHandle != INVALID_HANDLE_VALUE)
-			{
-				HIDD_ATTRIBUTES Attributes = {};
-				Attributes.Size = sizeof(HIDD_ATTRIBUTES);
-
-				if (HidD_GetAttributes(TempDeviceHandle, &Attributes))
-				{
-					if (
-						Attributes.VendorID == 0x054C &&
-						(
-							Attributes.ProductID == 0x0CE6 ||
-							Attributes.ProductID == 0x0DF2 ||
-							Attributes.ProductID == 0x05C4 ||
-							Attributes.ProductID == 0x09CC
-						)
-					)
-					{
-						FDeviceContext Context = {};
-						WCHAR DeviceProductString[260];
-						if (!HidD_GetProductString(TempDeviceHandle, DeviceProductString, 260))
-						{
-							UE_LOG(LogTemp, Error, TEXT("HIDManager: Failed to obtain device path for the DualSense."));
-							continue;
-						}
-
-						if (DevicePaths.Contains(DeviceIndex))
-						{
-							continue;
-						}
-						
-						memcpy_s(Context.Path, 260, DetailDataBuffer->DevicePath, 260);
-						DevicePaths.Add(DeviceIndex, *Context.Path);
-						switch (Attributes.ProductID)
-						{
-							case 0x05C4:
-							case 0x09CC:
-								Context.DeviceType = DualShock4;
-								break;
-							case 0x0DF2:
-								Context.DeviceType = DualSenseEdge;
-								break;
-							default: Context.DeviceType = DualSense;
-						}
-						
-						Context.IsConnected = true;
-						Context.ConnectionType = Usb;
-						
-						FString DevicePath(Context.Path);
-						if (DevicePath.Contains(TEXT("{00001124-0000-1000-8000-00805f9b34fb}")) ||
-							DevicePath.Contains(TEXT("bth")) ||
-							DevicePath.Contains(TEXT("BTHENUM")))
-						{
-							unsigned char FeatureBuffer[78];
-							FeatureBuffer[0] = 0x05;
-							if (!HidD_GetFeature(TempDeviceHandle, FeatureBuffer, 78)) {
-								UE_LOG(LogTemp, Warning, TEXT("HIDManager: Failed to HidD_GetFeature for the DualShock."));
-							}
-							Context.ConnectionType = Bluetooth;
-						}
-						Devices.Add(Context);
-					}
-				}
-			}
-			CloseHandle(TempDeviceHandle);
-		}
-		free(DetailDataBuffer);
-	}
-
-	SetupDiDestroyDeviceInfoList(DeviceInfoSet);
-	return Devices.Num() > 0;
+	FHIDDeviceInfo::InvalidateHandle(Context);
 }
 
-HANDLE UDeviceHIDManager::CreateHandle(FDeviceContext* DeviceContext)
-{
-	UE_LOG(LogTemp, Warning, TEXT("Path: %s"), DeviceContext->Path);
-	const HANDLE DeviceHandle = CreateFileW(
-			DeviceContext->Path,
-			GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, NULL, nullptr
-		);
-
-	if (DeviceHandle == INVALID_HANDLE_VALUE)
-	{
-		FreeContext(DeviceContext);
-		UE_LOG(LogTemp, Error, TEXT("HIDManager: Failed to open device handle for the DualSense."));
-		return INVALID_HANDLE_VALUE;
-	}
-	
-	return DeviceHandle;
-}
-
-bool UDeviceHIDManager::GetDeviceInputState(FDeviceContext* DeviceContext)
-{
-	if (DeviceContext->Handle == INVALID_HANDLE_VALUE)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Invalid device handle before attempting to read"));
-		return false;
-	}
-	
-	if (!DeviceContext->IsConnected)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Dualsense: DeviceContext->Connected, false"));
-		FreeContext(DeviceContext);
-		return false;
-	}
-
-	HidD_FlushQueue(DeviceContext->Handle);
-	
-	if (DeviceContext->ConnectionType == Bluetooth && DeviceContext->DeviceType == EDeviceType::DualShock4)
-	{
-		DWORD BytesRead = 0;
-		if (!ReadFile(DeviceContext->Handle, &DeviceContext->BufferDS4, 547, &BytesRead,
-					  nullptr))
-		{
-			const DWORD Error = GetLastError();
-			FString Device = DeviceContext->DeviceType == DualShock4 ? TEXT("DualShock") : TEXT("DualSense");
-			UE_LOG(LogTemp, Warning, TEXT("Erro read %s: size buffer %llu, Erro: %d"), *Device, sizeof(DeviceContext->BufferDS4), Error);
-
-			DeviceContext->Handle = INVALID_HANDLE_VALUE;
-			FreeContext(DeviceContext);
-			return false;
-		}
-		return true;
-	}
-
-	const size_t InputReportLength = DeviceContext->ConnectionType == Bluetooth ? 78 : 64;
-	DWORD BytesRead = 0;
-	if (!ReadFile(DeviceContext->Handle, DeviceContext->Buffer, InputReportLength, &BytesRead,
-				  nullptr))
-	{
-		const DWORD Error = GetLastError();
-		FString Device = DeviceContext->DeviceType == DualShock4 ? TEXT("DualShock") : TEXT("DualSense");
-		UE_LOG(LogTemp, Warning, TEXT("Erro read %s: size buffer %llu, Erro: %d"), *Device, sizeof(DeviceContext->Buffer), Error);
-
-		DeviceContext->Handle = INVALID_HANDLE_VALUE;
-		FreeContext(DeviceContext);
-		return false;
-	}
-	return true;
-}
-
-void UDeviceHIDManager::FreeContext(FDeviceContext* Context)
-{
-	CloseHandle(Context->Handle);
-	ZeroMemory(&Context->Path, sizeof(Context->Path));
-	ZeroMemory(&Context->Buffer, sizeof(Context->Buffer));
-	ZeroMemory(&Context->Output, sizeof(Context->Output));
-	Context->IsConnected = false;
-	Context->ConnectionType = Unrecognized;
-}
-
-void UDeviceHIDManager::OutputDualShock(FDeviceContext* DeviceContext)
+void UPlayStationOutputComposer::OutputDualShock(FDeviceContext* DeviceContext)
 {
 	const FOutputContext* HidOut = &DeviceContext->Output;
 
@@ -247,18 +54,11 @@ void UDeviceHIDManager::OutputDualShock(FDeviceContext* DeviceContext)
 		DeviceContext->BufferOutput[0x4C] = static_cast<unsigned char>((CrcChecksum & 0x00FF0000) >> 16UL);
 		DeviceContext->BufferOutput[0x4D] = static_cast<unsigned char>((CrcChecksum & 0xFF000000) >> 24UL);
 	}
-	
-	const size_t OutputReportLength = DeviceContext->ConnectionType == Bluetooth ? 78 : 32;
-	
-	DWORD BytesWritten = 0;
-	if (!WriteFile(DeviceContext->Handle, DeviceContext->BufferOutput, OutputReportLength, &BytesWritten, nullptr))
-	{
-		UE_LOG(LogTemp, Error, TEXT("Failed DualShock to write output data to device. report %llu error Code: %d"), OutputReportLength, GetLastError());
-		FreeContext(DeviceContext);
-	}
+
+	FHIDDeviceInfo::Write(DeviceContext);
 }
 
-void UDeviceHIDManager::OutputDualSense(FDeviceContext* DeviceContext)
+void UPlayStationOutputComposer::OutputDualSense(FDeviceContext* DeviceContext)
 {
 	const size_t Padding = DeviceContext->ConnectionType == Bluetooth ? 2 : 1;
 	DeviceContext->BufferOutput[0] = DeviceContext->ConnectionType == Bluetooth ? 0x31 : 0x02;
@@ -302,22 +102,10 @@ void UDeviceHIDManager::OutputDualSense(FDeviceContext* DeviceContext)
 		DeviceContext->BufferOutput[0x4D] = static_cast<unsigned char>((CrcChecksum & 0xFF000000) >> 24UL);
 	}
 
-	const size_t OutputReportLength = DeviceContext->ConnectionType == Bluetooth ? 78 : 74;
-	DWORD BytesWritten = 0;
-	if (!WriteFile(DeviceContext->Handle, DeviceContext->BufferOutput, OutputReportLength, &BytesWritten, nullptr))
-	{
-		UE_LOG(LogTemp, Error, TEXT("Failed DualSense to write output data to device. report %llu Error Code: %d"), OutputReportLength, GetLastError());
-		FreeContext(DeviceContext);
-	}
+	FHIDDeviceInfo::Write(DeviceContext);
 }
 
-// for (size_t i = 0; i < 78; ++i)
-// {
-// 	UE_LOG(LogTemp, Log, TEXT("Output Byte[%02d]: 0x%02X"), i, Output[i]);
-// 	UE_LOG(LogTemp, Log, TEXT("Buffer Byte[%02d]: 0x%02X"), i, DeviceContext->Buffer[i]);
-// }
-
-void UDeviceHIDManager::SetTriggerEffects(unsigned char* Trigger, FHapticTriggers& Effect)
+void UPlayStationOutputComposer::SetTriggerEffects(unsigned char* Trigger, FHapticTriggers& Effect)
 {
 	Trigger[0x0] = Effect.Mode;
 
@@ -404,7 +192,7 @@ void UDeviceHIDManager::SetTriggerEffects(unsigned char* Trigger, FHapticTrigger
 	}
 }
 
-const UINT32 UDeviceHIDManager::HashTable[256] = {
+const UINT32 UPlayStationOutputComposer::HashTable[256] = {
 	0xd202ef8d, 0xa505df1b, 0x3c0c8ea1, 0x4b0bbe37, 0xd56f2b94, 0xa2681b02, 0x3b614ab8, 0x4c667a2e,
 	0xdcd967bf, 0xabde5729, 0x32d70693, 0x45d03605, 0xdbb4a3a6, 0xacb39330, 0x35bac28a, 0x42bdf21c,
 	0xcfb5ffe9, 0xb8b2cf7f, 0x21bb9ec5, 0x56bcae53, 0xc8d83bf0, 0xbfdf0b66, 0x26d65adc, 0x51d16a4a,
@@ -439,7 +227,7 @@ const UINT32 UDeviceHIDManager::HashTable[256] = {
 	0x616495a3, 0x1663a535, 0x8f6af48f, 0xf86dc419, 0x660951ba, 0x110e612c, 0x88073096, 0xFF000000
 };
 
-UINT32 UDeviceHIDManager::Compute(const unsigned char* Buffer, const size_t Len)
+UINT32 UPlayStationOutputComposer::Compute(const unsigned char* Buffer, const size_t Len)
 {
 	UINT32 Result = CRCSeed;
 	for (size_t i = 0; i < Len; i++)

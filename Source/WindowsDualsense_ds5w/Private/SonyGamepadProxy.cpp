@@ -5,20 +5,16 @@
 
 #include "SonyGamepadProxy.h"
 #include "Misc/CoreDelegates.h"
-#include "Core/DeviceContainerManager.h"
+#include "Core/DeviceRegistry.h"
 
 bool USonyGamepadProxy::DeviceIsConnected(int32 ControllerId)
 {
-	if (const ISonyGamepadInterface* Gamepad = UDeviceContainerManager::Get()->GetLibraryOrReconnect(ControllerId); !Gamepad)
-	{
-		return false;
-	}
 	return true;
 }
 
 EDeviceType USonyGamepadProxy::GetDeviceType(int32 ControllerId)
 {
-	ISonyGamepadInterface* Gamepad = UDeviceContainerManager::Get()->GetLibraryInstance(ControllerId);
+	ISonyGamepadInterface* Gamepad = UDeviceRegistry::Get()->GetLibraryInstance(ControllerId);
 	if (!Gamepad)
 	{
 		return EDeviceType::NotFound;
@@ -29,7 +25,7 @@ EDeviceType USonyGamepadProxy::GetDeviceType(int32 ControllerId)
 
 EDeviceConnection USonyGamepadProxy::GetConnectionType(int32 ControllerId)
 {
-	ISonyGamepadInterface* Gamepad = UDeviceContainerManager::Get()->GetLibraryInstance(ControllerId);
+	ISonyGamepadInterface* Gamepad = UDeviceRegistry::Get()->GetLibraryInstance(ControllerId);
 	if (!Gamepad)
 	{
 		return EDeviceConnection::Unrecognized;
@@ -40,11 +36,6 @@ EDeviceConnection USonyGamepadProxy::GetConnectionType(int32 ControllerId)
 
 bool USonyGamepadProxy::DeviceReconnect(int32 ControllerId)
 {
-	if (const ISonyGamepadInterface* Gamepad = UDeviceContainerManager::Get()->GetLibraryOrReconnect(ControllerId); !Gamepad)
-	{
-		return false;
-	}
-
 	return true;
 }
 
@@ -55,7 +46,7 @@ bool USonyGamepadProxy::DeviceDisconnect(int32 ControllerId)
 
 float USonyGamepadProxy::LevelBatteryDevice(int32 ControllerId)
 {
-	ISonyGamepadInterface* Gamepad = UDeviceContainerManager::Get()->GetLibraryInstance(ControllerId);
+	ISonyGamepadInterface* Gamepad = UDeviceRegistry::Get()->GetLibraryInstance(ControllerId);
 	if (!Gamepad)
 	{
 		return 0.0f;
@@ -66,7 +57,7 @@ float USonyGamepadProxy::LevelBatteryDevice(int32 ControllerId)
 
 void USonyGamepadProxy::LedColorEffects(int32 ControllerId, FColor Color, float BrightnessTime, float ToogleTime)
 {
-	ISonyGamepadInterface* Gamepad = Cast<ISonyGamepadInterface>(UDeviceContainerManager::Get()->GetLibraryInstance(ControllerId));
+	ISonyGamepadInterface* Gamepad = Cast<ISonyGamepadInterface>(UDeviceRegistry::Get()->GetLibraryInstance(ControllerId));
 	if (!Gamepad)
 	{
 		return;
@@ -77,7 +68,7 @@ void USonyGamepadProxy::LedColorEffects(int32 ControllerId, FColor Color, float 
 
 void USonyGamepadProxy::LedMicEffects(int32 ControllerId, ELedMicEnum Value)
 {
-	ISonyGamepadInterface* Gamepad = Cast<ISonyGamepadInterface>(UDeviceContainerManager::Get()->GetLibraryInstance(ControllerId));
+	ISonyGamepadInterface* Gamepad = Cast<ISonyGamepadInterface>(UDeviceRegistry::Get()->GetLibraryInstance(ControllerId));
 	if (!Gamepad)
 	{
 		return;
@@ -88,7 +79,7 @@ void USonyGamepadProxy::LedMicEffects(int32 ControllerId, ELedMicEnum Value)
 
 void USonyGamepadProxy::EnableTouch(int32 ControllerId, bool bEnableTouch)
 {
-	ISonyGamepadInterface* Gamepad = Cast<ISonyGamepadInterface>(UDeviceContainerManager::Get()->GetLibraryInstance(ControllerId));
+	ISonyGamepadInterface* Gamepad = Cast<ISonyGamepadInterface>(UDeviceRegistry::Get()->GetLibraryInstance(ControllerId));
 	if (!Gamepad)
 	{
 		return;
@@ -99,7 +90,7 @@ void USonyGamepadProxy::EnableTouch(int32 ControllerId, bool bEnableTouch)
 
 void USonyGamepadProxy::EnableAccelerometerValues(int32 ControllerId, bool bEnableAccelerometer)
 {
-	ISonyGamepadInterface* Gamepad = Cast<ISonyGamepadInterface>(UDeviceContainerManager::Get()->GetLibraryInstance(ControllerId));
+	ISonyGamepadInterface* Gamepad = Cast<ISonyGamepadInterface>(UDeviceRegistry::Get()->GetLibraryInstance(ControllerId));
 	if (!Gamepad)
 	{
 		return;
@@ -110,7 +101,7 @@ void USonyGamepadProxy::EnableAccelerometerValues(int32 ControllerId, bool bEnab
 
 void USonyGamepadProxy::EnableGyroscopeValues(int32 ControllerId, bool bEnableGyroscope)
 {
-	ISonyGamepadInterface* Gamepad = Cast<ISonyGamepadInterface>(UDeviceContainerManager::Get()->GetLibraryInstance(ControllerId));
+	ISonyGamepadInterface* Gamepad = Cast<ISonyGamepadInterface>(UDeviceRegistry::Get()->GetLibraryInstance(ControllerId));
 	if (!Gamepad)
 	{
 		return;

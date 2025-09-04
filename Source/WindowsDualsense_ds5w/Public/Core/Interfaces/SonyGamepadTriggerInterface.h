@@ -119,7 +119,6 @@ public:
 	 * @param Hand An enum indicating which controller hand's trigger effects should be stopped.
 	 */
 	virtual void StopTrigger(const EControllerHand& Hand) = 0;
-
 	/**
 	 * Configures the gamepad vibration based on audio feedback parameters.
 	 *
