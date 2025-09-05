@@ -3,7 +3,6 @@
 // Planned Release Year: 2025
 
 #include "DualSenseProxy.h"
-
 #include "Core/DeviceRegistry.h"
 #include "Core/DualSense/DualSenseLibrary.h"
 #include "Core/Interfaces/SonyGamepadInterface.h"

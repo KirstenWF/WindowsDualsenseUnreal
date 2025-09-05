@@ -5,7 +5,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "HIDPollingRunnable.h"
+#include "Windows/WindowsApplication.h"
+#include "Async/TaskGraphInterfaces.h"
+#include "Core/HIDPollingRunnable.h"
+#include "HAL/PlatformProcess.h"
+#include "HAL/RunnableThread.h"
 #include "Interfaces/SonyGamepadInterface.h"
 #include "UObject/Object.h"
 #include "DeviceRegistry.generated.h"
@@ -95,7 +99,7 @@ public:
 	 * @param DeltaTime The time in seconds since the last tick, used to accumulate time for
 	 *                  periodic processing of the device lifecycle and connection state.
 	 */
-	static void DetectedChangeConnections(float DeltaTime);
+	void DetectedChangeConnections(float DeltaTime);
 	
 private:
 	/**

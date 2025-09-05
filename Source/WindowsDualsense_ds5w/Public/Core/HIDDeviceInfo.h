@@ -3,23 +3,14 @@
 // Planned Release Year: 2025
 
 #pragma once
+#define NOMINMAX
 
-#include <concrt.h>
+#include "CoreMinimal.h"
+#include "Windows/AllowWindowsPlatformTypes.h"
+#include <Windows.h>
+#include "Windows/HideWindowsPlatformTypes.h"
 #include <chrono>
-#include <mutex>
-#include "DualSenseProxy.h"
 #include "Structs/FDeviceContext.h"
-
-
-struct FPingPolicy {
-	std::chrono::milliseconds WakeThreshold{150};
-	std::chrono::milliseconds MinInterval{100};
-};
-
-struct FPollState {
-	std::chrono::steady_clock::time_point LastSuccess = std::chrono::steady_clock::now();
-	std::chrono::steady_clock::time_point LastPing    = std::chrono::steady_clock::time_point::min();
-};
 
 enum class EPollResult {
 	ReadOk,
@@ -126,12 +117,10 @@ public:
 	 * @param Handle A handle to the HID device being polled.
 	 * @param Buffer A pointer to a buffer where the method writes the data read from the device.
 	 * @param Length The maximum number of bytes that can be read into the buffer.
-	 * @param Policy The policy specifying the timing and conditions for ping and polling operations.
-	 * @param State A reference to an object that tracks the state of the polling operation for the HID device.
 	 * @param OutBytesRead A reference to a variable where the number of bytes successfully read will be stored.
 	 * @return An enumeration value of type EPollResult indicating the result of the polling operation.
 	 */
-	static EPollResult PollTick(HANDLE Handle, BYTE* Buffer, DWORD Length, const FPingPolicy& Policy, FPollState& State, DWORD& OutBytesRead);
+	static EPollResult PollTick(HANDLE Handle, BYTE* Buffer, DWORD Length, DWORD& OutBytesRead);
 
 	/**
 	 * @brief Determines whether the given error code should be treated as a device disconnection.
@@ -166,5 +155,5 @@ public:
 	 * outcomes and states for each device during input polling iterations.
 	 */
 private:
-	static TMap<FInputDeviceId, TPair<EPollResult, FPollState>> PollResults;
+	static TMap<FInputDeviceId, EPollResult> PollResults;
 };

@@ -7,6 +7,8 @@
 #include "CoreMinimal.h"
 #include "IHapticDevice.h"
 #include "IInputDevice.h"
+#include "InputCoreTypes.h"
+
 
 
 /**

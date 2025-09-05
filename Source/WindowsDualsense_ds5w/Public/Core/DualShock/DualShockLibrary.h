@@ -5,9 +5,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "UObject/Object.h"
 #include "Core/Interfaces/SonyGamepadInterface.h"
 #include "Core/Structs/FDualShockFeatureReport.h"
-#include "UObject/Object.h"
+#include "Async/TaskGraphInterfaces.h"
 #include "DualShockLibrary.generated.h"
 
 /**

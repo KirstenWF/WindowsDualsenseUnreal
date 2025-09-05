@@ -6,6 +6,7 @@
 #include "SonyGamepadProxy.h"
 #include "Misc/CoreDelegates.h"
 #include "Core/DeviceRegistry.h"
+#include "Core/Interfaces/SonyGamepadInterface.h"
 
 bool USonyGamepadProxy::DeviceIsConnected(int32 ControllerId)
 {

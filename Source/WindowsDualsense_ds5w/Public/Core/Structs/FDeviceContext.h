@@ -7,7 +7,6 @@
 #include "CoreMinimal.h"
 #include "FOutputContext.h"
 #include "Core/Enums/EDeviceConnection.h"
-#include "GameFramework/InputSettings.h"
 #include "FDeviceContext.generated.h"
 
 /**

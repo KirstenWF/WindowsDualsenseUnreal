@@ -4,12 +4,13 @@
 
 
 #include "Core/DualShock/DualShockLibrary.h"
-#include <Windows.h>
-#include "Core/PlayStationOutputComposer.h"
-#include "InputCoreTypes.h"
+#include "Async/Async.h"
+#include "Async/TaskGraphInterfaces.h"
 #include "Core/HIDDeviceInfo.h"
-#include "Core/Structs/FOutputContext.h"
+#include "InputCoreTypes.h"
 #include "Helpers/ValidateHelpers.h"
+#include "Core/PlayStationOutputComposer.h"
+#include "Core/Structs/FOutputContext.h"
 
 void UDualShockLibrary::Disconnect()
 {

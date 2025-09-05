@@ -3,13 +3,12 @@
 // Planned Release Year: 2025
 
 #include "Core/HIDDeviceInfo.h"
-#include <windows.h>
 #include <hidsdi.h>
 #include <setupapi.h>
-#include "Windows/AllowWindowsPlatformTypes.h"
-#include "Windows/HideWindowsPlatformTypes.h"
+#include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
+#include "Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h"
 
-TMap<FInputDeviceId, TPair<EPollResult, FPollState>> FHIDDeviceInfo::PollResults;
+TMap<FInputDeviceId, EPollResult> FHIDDeviceInfo::PollResults;
 
 void FHIDDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 {
@@ -150,8 +149,7 @@ void FHIDDeviceInfo::Read(FDeviceContext* Context)
 	
 	HidD_FlushQueue(Context->Handle);
 
-	static FPingPolicy Policy{ std::chrono::milliseconds(150), std::chrono::milliseconds(100) };
-	FPollState State = {std::chrono::steady_clock::now(), std::chrono::steady_clock::now()};
+	
 	// if (!PollResults.Contains(Context->UniqueInputDeviceId))
 	// {
 	// 	
@@ -170,8 +168,7 @@ void FHIDDeviceInfo::Read(FDeviceContext* Context)
 			return;
 		}
 		
-		const EPollResult Response = PollTick(Context->Handle, Context->BufferDS4, InputReportLength,
-									 Policy, State, BytesRead);
+		const EPollResult Response = PollTick(Context->Handle, Context->BufferDS4, InputReportLength, BytesRead);
 		if (Response == EPollResult::Disconnected)
 		{
 			InvalidateHandle(Context);
@@ -186,8 +183,7 @@ void FHIDDeviceInfo::Read(FDeviceContext* Context)
 		return;
 	}
 
-	const EPollResult Response = PollTick(Context->Handle, Context->Buffer, InputReportLength,
-									 Policy, State, BytesRead);
+	const EPollResult Response = PollTick(Context->Handle, Context->Buffer, InputReportLength, BytesRead);
 	if (Response == EPollResult::Disconnected)
 	{
 		InvalidateHandle(Context);
@@ -263,8 +259,7 @@ void FHIDDeviceInfo::InvalidateHandle(HANDLE Handle)
 	}
 }
 
-EPollResult FHIDDeviceInfo::PollTick(HANDLE Handle, BYTE* Buffer, DWORD Length, const FPingPolicy& Policy,
-                                     FPollState& State, DWORD& OutBytesRead)
+EPollResult FHIDDeviceInfo::PollTick(HANDLE Handle, BYTE* Buffer, DWORD Length, DWORD& OutBytesRead)
 {
 	// const auto Now = std::chrono::steady_clock::now();
 	//

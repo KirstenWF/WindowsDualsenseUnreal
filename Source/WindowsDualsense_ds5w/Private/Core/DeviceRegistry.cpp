@@ -3,10 +3,19 @@
 // Planned Release Year: 2025
 
 #include "Core/DeviceRegistry.h"
-#include "SonyGamepadProxy.h"
+#include "Async/Async.h"
+#include "Async/TaskGraphInterfaces.h"
+#include "Core/HIDPollingRunnable.h"
 #include "Core/HIDDeviceInfo.h"
+#include "Windows/WindowsApplication.h"
 #include "Core/DualSense/DualSenseLibrary.h"
 #include "Core/DualShock/DualShockLibrary.h"
+#include "GameFramework/InputSettings.h"
+#include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
+#include "Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h"
+#include "Core/Structs/FDeviceContext.h"
+#include "Core/Structs/FOutputContext.h"
+#include "Core/Interfaces/SonyGamepadInterface.h"
 
 UDeviceRegistry* UDeviceRegistry::Instance;
 TMap<FString, FInputDeviceId> UDeviceRegistry::KnownDevicePaths;
@@ -119,8 +128,7 @@ UDeviceRegistry* UDeviceRegistry::Get()
 {
 	if (!Instance)
 	{
-		check(IsInGameThread());
-		Instance = NewObject<UDeviceRegistry>(GetTransientPackage());
+		Instance = NewObject<UDeviceRegistry>();
 		Instance->AddToRoot();
 	}
 	return Instance;

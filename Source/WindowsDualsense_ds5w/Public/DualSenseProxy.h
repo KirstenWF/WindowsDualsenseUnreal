@@ -12,6 +12,8 @@
 #include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
 #include "Core/Enums/EDeviceCommons.h"
 #include "Core/Structs/FDualSenseFeatureReport.h"
+#include "Core/Interfaces/SonyGamepadInterface.h"
+#include "Core/Interfaces/SonyGamepadTriggerInterface.h"
 #include "DualSenseProxy.generated.h"
 
 /**

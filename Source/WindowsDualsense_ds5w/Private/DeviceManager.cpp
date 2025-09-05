@@ -3,6 +3,8 @@
 // Planned Release Year: 2025
 
 #include "DeviceManager.h"
+#include "Async/Async.h"
+#include "Async/TaskGraphInterfaces.h"
 #include "Core/DeviceRegistry.h"
 #include "Core/Interfaces/SonyGamepadTriggerInterface.h"
 #include "Windows/WindowsApplication.h"

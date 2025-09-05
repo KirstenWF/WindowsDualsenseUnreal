@@ -10,7 +10,6 @@
 #include <chrono>
 #include <concrt.h>
 
-class FRunnableThread;
 
 /**
  * A dedicated runnable class for managing periodic HID device polling.

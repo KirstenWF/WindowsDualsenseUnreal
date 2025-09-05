@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <concrt.h>
 #include "CoreMinimal.h"
 #include "Core/Structs/FDeviceContext.h"
 #include "PlayStationOutputComposer.generated.h"

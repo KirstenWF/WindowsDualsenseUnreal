@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.2.9",
+	"VersionName": "1.2.10",
 	"FriendlyName": "WindowsDualsense_ds5w",
 	"Description": "DualSense & DualShock 4 devices for Windows platforms. Supports settings of triggers, force feedback, vibrations, leds, battery level, microphone",
 	"Category": "Input Devices",
@@ -21,14 +21,6 @@
 			"Name": "WindowsDualsense_ds5w",
 			"Type": "Runtime",
 			"LoadingPhase": "PreDefault",
-			"PlatformAllowList": [
-				"Win64"
-			]
-		},
-		{
-			"Name": "WindowsDualsense_ds5wEditor",
-			"Type": "Editor",
-			"LoadingPhase": "Default",
 			"PlatformAllowList": [
 				"Win64"
 			]

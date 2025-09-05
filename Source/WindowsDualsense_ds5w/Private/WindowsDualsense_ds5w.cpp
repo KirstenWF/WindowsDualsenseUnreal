@@ -11,7 +11,6 @@
 #include "Microsoft/AllowMicrosoftPlatformTypes.h"
 #include <stdio.h>
 
-#include "Core/DeviceRegistry.h"
 #define LOCTEXT_NAMESPACE "FWindowsDualsense_ds5wModule"
 
 void FWindowsDualsense_ds5wModule::StartupModule()
