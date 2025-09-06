@@ -164,6 +164,7 @@ public:
 	}
 
 private:
+	FInputDeviceId GetGamepadInterface(int32 ControllerId);
 	/**
 	 * Determines whether resources or data are loaded on demand rather than
 	 * during the initial application startup or initialization phase.

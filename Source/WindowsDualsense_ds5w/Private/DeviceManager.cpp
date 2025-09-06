@@ -80,7 +80,13 @@ void DeviceManager::SetDeviceProperty(int32 ControllerId, const FInputDeviceProp
 
 	if (Property->Name == FName("InputDeviceTriggerResistance"))
 	{
-		ISonyGamepadTriggerInterface* GamepadTrigger = Cast<ISonyGamepadTriggerInterface>(UDeviceRegistry::Get()->GetLibraryInstance(ControllerId));
+		const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
+		if (!DeviceId.IsValid())
+		{
+			return;
+		}
+		
+		ISonyGamepadTriggerInterface* GamepadTrigger = Cast<ISonyGamepadTriggerInterface>(UDeviceRegistry::Get()->GetLibraryInstance(DeviceId.GetId()));
 		if (!IsValid(GamepadTrigger->_getUObject()))
 		{
 			return;
@@ -93,7 +99,13 @@ void DeviceManager::SetHapticFeedbackValues(const int32 ControllerId, const int3
 {
 	if (LazyLoading) return;
 
-	ISonyGamepadTriggerInterface* GamepadTrigger = Cast<ISonyGamepadTriggerInterface>(UDeviceRegistry::Get()->GetLibraryInstance(ControllerId));
+	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
+	if (!DeviceId.IsValid())
+	{
+		return;
+	}
+
+	ISonyGamepadTriggerInterface* GamepadTrigger = Cast<ISonyGamepadTriggerInterface>(UDeviceRegistry::Get()->GetLibraryInstance(DeviceId.GetId()));
 	if (!IsValid(GamepadTrigger->_getUObject()))
 	{
 		return;
@@ -106,7 +118,13 @@ void DeviceManager::SetChannelValues(int32 ControllerId, const FForceFeedbackVal
 {
 	if (LazyLoading) return;
 
-	ISonyGamepadInterface* Gamepad = UDeviceRegistry::Get()->GetLibraryInstance(ControllerId);
+	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
+	if (!DeviceId.IsValid())
+	{
+		return;
+	}
+	
+	ISonyGamepadInterface* Gamepad = UDeviceRegistry::Get()->GetLibraryInstance(DeviceId.GetId());
 	if (!Gamepad)
 	{
 		return;
@@ -119,7 +137,13 @@ void DeviceManager::SetLightColor(const int32 ControllerId, const FColor Color)
 {
 	if (LazyLoading) return;
 
-	ISonyGamepadInterface* Gamepad = UDeviceRegistry::Get()->GetLibraryInstance(ControllerId);
+	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
+	if (!DeviceId.IsValid())
+	{
+		return;
+	}
+	
+	ISonyGamepadInterface* Gamepad = UDeviceRegistry::Get()->GetLibraryInstance(DeviceId.GetId());
 	if (!Gamepad)
 	{
 		return;
@@ -132,7 +156,13 @@ void DeviceManager::ResetLightColor(const int32 ControllerId)
 {
 	if (LazyLoading) return;
 
-	ISonyGamepadInterface* Gamepad = UDeviceRegistry::Get()->GetLibraryInstance(ControllerId);
+	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
+	if (!DeviceId.IsValid())
+	{
+		return;
+	}
+	
+	ISonyGamepadInterface* Gamepad = UDeviceRegistry::Get()->GetLibraryInstance(DeviceId.GetId());
 	if (!Gamepad)
 	{
 		return;
@@ -160,3 +190,20 @@ void DeviceManager::OnUserLoginChangedEvent(bool bLoggedIn, int32 UserId, int32 
 		UE_LOG(LogTemp, Log, TEXT("DualSense: DeviceManager User %d logged in."), UserId);
 	}
 }
+
+FInputDeviceId DeviceManager::GetGamepadInterface(int32 ControllerId)
+{
+	TArray<FInputDeviceId> Devices;
+	Devices.Reset();
+	
+	IPlatformInputDeviceMapper::Get().GetAllInputDevicesForUser(FPlatformUserId::CreateFromInternalId(ControllerId), Devices);
+	
+	for (int32 i = 0; i < Devices.Num(); i++)
+	{
+		if (ISonyGamepadInterface* Gamepad = UDeviceRegistry::Get()->GetLibraryInstance(i))
+		{
+			return Gamepad->GetDeviceId();
+		}
+	}
+	return FInputDeviceId::CreateFromInternalId(INDEX_NONE);
+} 
