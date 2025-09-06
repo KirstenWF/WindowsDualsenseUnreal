@@ -20,7 +20,7 @@ UCLASS(Blueprintable, BlueprintType)
 class WINDOWSDUALSENSE_DS5W_API USonyGamepadProxy : public UObject
 {
 	GENERATED_BODY()
-
+	
 
 public:
 	static FGenericPlatformInputDeviceMapper PlatformInputDeviceMapper;
@@ -52,16 +52,6 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "SonyGamepad: Dualsense or DualShock Status")
 	static EDeviceConnection GetConnectionType(int32 ControllerId);
-	/**
-	 * Attempts to reconnect a DualSense or DualShock controller based on the given controller ID.
-	 * If the controller is successfully reconnected, the operation returns true;
-	 * otherwise, it returns false.
-	 *
-	 * @param ControllerId The ID of the controller to reconnect.
-	 * @return Returns true if the controller was successfully reconnected, false otherwise.
-	 */
-	UFUNCTION(BlueprintCallable, Category = "SonyGamepad: Dualsense or DualShock Status")
-	static bool DeviceReconnect(int32 ControllerId);
 	/**
 	 * Disconnects the DualSense or DualShock device associated with the given Controller ID.
 	 * This method removes the library instance associated with the specified controller.
@@ -156,4 +146,23 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "SonyGamepad: Remap Device from User",
 		meta=(DeprecatedFunction, DeprecationMessage="Use GamepadCoOp Plugin"))
 	static void RemapControllerIdToUser(int32 GamepadId, int32 UserId, int32 OldUser) {}
+
+	/**
+	 * Attempts to reconnect a DualSense or DualShock controller based on the given controller ID.
+	 * If the controller is successfully reconnected, the operation returns true;
+	 * otherwise, it returns false.
+	 *
+	 * @param ControllerId The ID of the controller to reconnect.
+	 * @return Returns true if the controller was successfully reconnected, false otherwise.
+	 */
+	UE_DEPRECATED(
+		5.1, "Methods refactored and deprecated as of plugin version v1.2.10")
+	UFUNCTION(BlueprintCallable, Category = "SonyGamepad: Dualsense or DualShock Status",
+		meta=(DeprecatedFunction, DeprecationMessage="Use GamepadCoOp Plugin"))
+	static bool DeviceReconnect(int32 ControllerId) { return true; }
+
+protected:
+	UFUNCTION()
+	static FInputDeviceId GetGamepadInterface(int32 ControllerId);
+	
 };
