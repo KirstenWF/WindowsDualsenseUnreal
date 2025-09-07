@@ -40,7 +40,33 @@ O objetivo é preencher a lacuna deixada pelo suporte genérico a controles no W
 
 ## 🎬 Demonstração
 
+Para ver o plugin em ação, assista ao vídeo de uso básico no YouTube.
+
 [Veja vídeo de uso](https://www.youtube.com/watch?v=GrCa5s6acmo)
+
+## 🎮 Projeto de Exemplo: Parrot Game Sample
+
+Para demonstrar o uso prático do **Windows Dualsense Unreal Plugin**, foi desenvolvido um projeto de exemplo utilizando o [*Parrot Game Sample*](https://dev.epicgames.com/documentation/pt-br/unreal-engine/parrot-game-sample-for-unreal-engine) da Epic Games. Este projeto integra funcionalidades-chave do controle DualSense para aprimorar a experiência do jogador.
+
+![Parrot Game Sample](https://dev.epicgames.com/community/api/documentation/image/4ba032bc-15fd-4f1e-b8b3-12eed40c63e3?resizing_type=fill&width=1920&height=500)
+
+### Funcionalidades Implementadas
+
+Neste exemplo, as seguintes funcionalidades do DualSense foram integradas para proporcionar uma jogabilidade mais imersiva:
+
+* **Feedback Visual**: A Lightbar do controle é utilizada para fornecer feedback visual em tempo real ao jogador, alterando cores e efeitos de acordo com eventos do jogo.
+* **Vibração (Force Feedback)**: O sistema nativo de Force Feedback foi utilizado para criar efeitos de vibração detalhados, aumentando a imersão em momentos importantes do gameplay.
+
+> 💡 **Dica Pro para Maior Imersão**: Para uma experiência de áudio ainda mais profunda, conecte o controle via USB e utilize um fone de ouvido diretamente nele. Essa configuração também funciona com o controle conectado via Bluetooth, oferecendo maior flexibilidade.
+
+Este projeto serve como um guia prático para desenvolvedores que desejam ver o plugin em ação e aprender como integrar os recursos exclusivos do controle DualSense em seus próprios jogos.
+
+### Onde Baixar
+
+Você pode baixar o projeto de exemplo *Parrot Game Sample* com a integração do DualSense diretamente do nosso repositório no GitHub.
+
+- [**Baixe o projeto de exemplo aqui**](https://drive.google.com/file/d/198Dko7ZwIX1vz9jw7RtYp4arY9Qp5bJ4/view?usp=drive_link)
+
 
 ## 🚀 Começando
 
@@ -107,6 +133,8 @@ Este projeto é distribuído sob a licença MIT. Veja o arquivo `LICENSE` para m
 ## ⭐ Créditos e Agradecimentos
 
 Agradecimento especial a todos que já contribuíram com sugestões, reportaram bugs e ofereceram melhorias de implementação. Um agradecimento também aos desenvolvedores das bibliotecas usadas como inspiração e referência para a criação deste projeto.
+
+Um agradecimento especial também à equipe da Epic Games por criar e disponibilizar o *Parrot Game Sample*, que serviu como uma excelente base para o projeto de exemplo que demonstra as funcionalidades deste plugin.
 
 * [DualSense on Windows API](https://github.com/Ohjurot/DualSense-Windows)
 * [Nielk1 on GIST](https://gist.github.com/Nielk1/6d54cc2c00d2201ccb8c2720ad7538db)
