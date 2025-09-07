@@ -69,7 +69,6 @@ You can download the *Parrot Game Sample* with the DualSense integration directl
 
 - [**Download the example project here**](https://drive.google.com/file/d/198Dko7ZwIX1vz9jw7RtYp4arY9Qp5bJ4/view?usp=drive_link)
 
-
 ## 🚀 Getting Started
 
 ### Prerequisites
