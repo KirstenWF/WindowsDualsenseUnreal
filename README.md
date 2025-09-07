@@ -49,7 +49,7 @@ To see the plugin in action, watch the basic usage video on YouTube.
 
 To demonstrate the practical use of the **Windows Dualsense Unreal Plugin**, a sample project has been developed using the [*Parrot Game Sample*](https://dev.epicgames.com/documentation/en-us/unreal-engine/parrot-game-sample-for-unreal-engine) from Epic Games. This project integrates key features of the DualSense controller to enhance the player's experience.
 
-![Parrot Game Sample](https://dev.epicgames.com/community/api/documentation/image/4ba032bc-15fd-4f1e-b8b3-12eed40c63e3?resizing_type=fill&width=1920&height=500)
+![Parrot Game Sample](Images/parrot-game-sample-banner.jpg)
 
 
 ### Implemented Features
