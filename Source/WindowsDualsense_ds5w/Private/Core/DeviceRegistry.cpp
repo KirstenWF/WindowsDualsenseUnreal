@@ -59,10 +59,6 @@ void UDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 			DetectedDevices.Reset();
 
 			DeviceInfo->Detect(DetectedDevices);
-			if (DetectedDevices.IsEmpty())
-			{
-				UE_LOG(LogTemp, Warning, TEXT("SonyGamepad: device not found. Creating default library instance."));
-			}
 			
 			AsyncTask(ENamedThreads::GameThread, [WeakManager, DetectedDevices = MoveTemp(DetectedDevices)]() mutable
 			{
