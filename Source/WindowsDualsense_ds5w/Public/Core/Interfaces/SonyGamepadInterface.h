@@ -46,7 +46,6 @@ class WINDOWSDUALSENSE_DS5W_API ISonyGamepadInterface
 	 * @return A pointer to the ISonyGamepadInterface instance.
 	 */
 public:
-	virtual ISonyGamepadInterface* Get() = 0;
 	/**
 	 * Disconnects the gamepad from the system.
 	 */

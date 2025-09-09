@@ -17,18 +17,12 @@
 #include "Core/Structs/FOutputContext.h"
 #include "Core/Interfaces/SonyGamepadInterface.h"
 
-UDeviceRegistry* UDeviceRegistry::Instance;
-TMap<FString, FInputDeviceId> UDeviceRegistry::KnownDevicePaths;
-TMap<FInputDeviceId, ISonyGamepadInterface*> UDeviceRegistry::LibraryInstances;
-TMap<FString, TPair<FInputDeviceId, FPlatformUserId>> UDeviceRegistry::HistoryDevices;
-TMap<int32, TUniquePtr<FHIDPollingRunnable>> UDeviceRegistry::ActiveConnectionWatchers;
-
-float UDeviceRegistry::AccumulatorDelta = 0.0f;
-bool UDeviceRegistry::bIsDeviceDetectionInProgress = false;
+TSharedPtr<FDeviceRegistry> FDeviceRegistry::Instance;
 
 bool PrimaryTick = true;
 float AccumulateSecurity = 0;
-void UDeviceRegistry::DetectedChangeConnections(float DeltaTime)
+
+void FDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 {
 	AccumulateSecurity += DeltaTime;
 	if (bIsDeviceDetectionInProgress && AccumulateSecurity >= 1.f)
@@ -50,24 +44,21 @@ void UDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 	PrimaryTick = false;
 	bIsDeviceDetectionInProgress = true;
 
-	TWeakObjectPtr<UDeviceRegistry> WeakManager = Get();
-	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [WeakManager]()
+	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [WeakManager = AsWeak()]()
 	{
-			const TUniquePtr<FHIDDeviceInfo> DeviceInfo = MakeUnique<FHIDDeviceInfo>();
-		
 			TArray<FDeviceContext> DetectedDevices;
 			DetectedDevices.Reset();
 
-			DeviceInfo->Detect(DetectedDevices);
-			
+			FHIDDeviceInfo::Detect(DetectedDevices);
+
 			AsyncTask(ENamedThreads::GameThread, [WeakManager, DetectedDevices = MoveTemp(DetectedDevices)]() mutable
 			{
-				if (!WeakManager.IsValid())
+				const TSharedPtr<FDeviceRegistry> Manager = WeakManager.Pin();
+				if (!Manager)
 				{
 					return;
 				}
 
-				const UDeviceRegistry* Manager = WeakManager.Get();
 				const TUniquePtr<FHIDDeviceInfo> HidManagerObj;
 
 				TSet<FString> CurrentlyConnectedPaths;
@@ -120,18 +111,17 @@ void UDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 	});
 }
 
-UDeviceRegistry* UDeviceRegistry::Get()
+TSharedPtr<FDeviceRegistry> FDeviceRegistry::Get()
 {
 	if (!Instance)
 	{
 		check(IsInGameThread());
-		Instance = NewObject<UDeviceRegistry>();
-		Instance->AddToRoot();
+		Instance = MakeShared<FDeviceRegistry>();
 	}
 	return Instance;
 }
 
-UDeviceRegistry::~UDeviceRegistry()
+FDeviceRegistry::~FDeviceRegistry()
 {
 	TArray<int32> WatcherKeys;
 	ActiveConnectionWatchers.GetKeys(WatcherKeys);
@@ -142,7 +132,7 @@ UDeviceRegistry::~UDeviceRegistry()
 	}
 }
 
-ISonyGamepadInterface* UDeviceRegistry::GetLibraryInstance(int32 ControllerId)
+ISonyGamepadInterface* FDeviceRegistry::GetLibraryInstance(int32 ControllerId)
 {
 	const FInputDeviceId GamepadId = FInputDeviceId::CreateFromInternalId(ControllerId);
 	if (!LibraryInstances.Contains(GamepadId))
@@ -157,7 +147,7 @@ ISonyGamepadInterface* UDeviceRegistry::GetLibraryInstance(int32 ControllerId)
 	return LibraryInstances[GamepadId];
 }
 
-void UDeviceRegistry::RemoveLibraryInstance(int32 ControllerId)
+void FDeviceRegistry::RemoveLibraryInstance(int32 ControllerId)
 {
 	FInputDeviceId GamepadId = FInputDeviceId::CreateFromInternalId(ControllerId);
 	if (
@@ -179,7 +169,7 @@ void UDeviceRegistry::RemoveLibraryInstance(int32 ControllerId)
 	const int32 NumRemoved = ActiveConnectionWatchers.Remove(ControllerId);
 }
 
-void UDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
+void FDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
 {
 	ISonyGamepadInterface* SonyGamepad = nullptr;
 	if (Context.DeviceType == EDeviceType::DualSense || Context.DeviceType == EDeviceType::DualSenseEdge)
@@ -260,7 +250,7 @@ void UDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
 	}
 }
 
-void UDeviceRegistry::RemoveAllLibraryInstance()
+void FDeviceRegistry::RemoveAllLibraryInstance()
 {
 	for (const auto& LibraryInstance : LibraryInstances)
 	{
@@ -270,12 +260,12 @@ void UDeviceRegistry::RemoveAllLibraryInstance()
 }
 
 
-int32 UDeviceRegistry::GetAllocatedDevices()
+int32 FDeviceRegistry::GetAllocatedDevices()
 {
 	return LibraryInstances.Num();
 }
 
-TMap<FInputDeviceId, ISonyGamepadInterface*> UDeviceRegistry::GetAllocatedDevicesMap()
+TMap<FInputDeviceId, ISonyGamepadInterface*> FDeviceRegistry::GetAllocatedDevicesMap()
 {
 	return LibraryInstances;
 }

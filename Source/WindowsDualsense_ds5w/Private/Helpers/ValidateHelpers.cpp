@@ -6,22 +6,22 @@
 
 #include "Helpers/ValidateHelpers.h"
 
-bool UValidateHelpers::ValidateMaxForce(const int32 Strength)
+bool FValidateHelpers::ValidateMaxForce(const int32 Strength)
 {
 	return Strength <= 8 && Strength >= 0;
 }
 
-bool UValidateHelpers::ValidateMaxPosition(const int32 Position)
+bool FValidateHelpers::ValidateMaxPosition(const int32 Position)
 {
 	return Position <= 8 && Position >= 0;
 }
 
-bool UValidateHelpers::ValidateMaxFrequency(const float Frequency)
+bool FValidateHelpers::ValidateMaxFrequency(const float Frequency)
 {
 	return Frequency <= 1.0 && Frequency >= 0.0;
 }
 
-int UValidateHelpers::To255(const float Value)
+int FValidateHelpers::To255(const float Value)
 {
 	if (Value <= 0) return 0;
 	if (Value >= 1.0f) return 255;
@@ -32,7 +32,7 @@ int UValidateHelpers::To255(const float Value)
 	return static_cast<int>(NormalizedPosition * 255);
 }
 
-int UValidateHelpers::To255(const unsigned char Value, const unsigned char MaxInput)
+int FValidateHelpers::To255(const unsigned char Value, const unsigned char MaxInput)
 {
 	if (Value <= 0) return 0;
 	if (Value >= MaxInput) return 255;

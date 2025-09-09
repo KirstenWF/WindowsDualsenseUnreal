@@ -21,7 +21,7 @@ bool UDualSenseLibrary::InitializeLibrary(const FDeviceContext& Context)
 void UDualSenseLibrary::ShutdownLibrary()
 {
 	ButtonStates.Reset();
-	UPlayStationOutputComposer::FreeContext(&HIDDeviceContexts);
+	FPlayStationOutputComposer::FreeContext(&HIDDeviceContexts);
 }
 
 bool UDualSenseLibrary::IsConnected()
@@ -36,7 +36,7 @@ void UDualSenseLibrary::SendOut()
 		return;
 	}
 	
-	UPlayStationOutputComposer::OutputDualSense(&HIDDeviceContexts);
+	FPlayStationOutputComposer::OutputDualSense(&HIDDeviceContexts);
 }
 
 void UDualSenseLibrary::Disconnect()
@@ -322,8 +322,8 @@ void UDualSenseLibrary::SetVibration(const FForceFeedbackValues& Vibration)
 	const float LeftRumble = FMath::Max(Vibration.LeftLarge, Vibration.LeftSmall);
 	const float RightRumble = FMath::Max(Vibration.RightLarge, Vibration.RightSmall);
 
-	const unsigned char OutputLeft = static_cast<unsigned char>(UValidateHelpers::To255(LeftRumble));
-	const unsigned char OutputRight = static_cast<unsigned char>(UValidateHelpers::To255(RightRumble));
+	const unsigned char OutputLeft = static_cast<unsigned char>(FValidateHelpers::To255(LeftRumble));
+	const unsigned char OutputRight = static_cast<unsigned char>(FValidateHelpers::To255(RightRumble));
 	if (HidOutput->Rumbles.Left != OutputLeft || HidOutput->Rumbles.Right != OutputRight)
 	{
 		HidOutput->Rumbles = {OutputLeft, OutputRight};
@@ -356,8 +356,8 @@ void UDualSenseLibrary::SetVibrationAudioBased(
 			FMath::Pow((InputRight - Threshold) / (1.0f - Threshold), ExponentCurve);
 	}
 
-	const unsigned char OutputLeft = static_cast<unsigned char>(UValidateHelpers::To255(IntensityLeftRumble));
-	const unsigned char OutputRight = static_cast<unsigned char>(UValidateHelpers::To255(IntensityRightRumble));
+	const unsigned char OutputLeft = static_cast<unsigned char>(FValidateHelpers::To255(IntensityLeftRumble));
+	const unsigned char OutputRight = static_cast<unsigned char>(FValidateHelpers::To255(IntensityRightRumble));
 	HidOutput->Rumbles = {OutputLeft, OutputRight};
 
 	SendOut();
@@ -368,12 +368,12 @@ void UDualSenseLibrary::SetHapticFeedback(int32 Hand, const FHapticFeedbackValue
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
 	if (Hand == static_cast<int32>(EControllerHand::Left) || Hand == static_cast<int32>(EControllerHand::AnyHand))
 	{
-		HidOutput->LeftTrigger.Frequency = UValidateHelpers::To255(Values->Frequency);
+		HidOutput->LeftTrigger.Frequency = FValidateHelpers::To255(Values->Frequency);
 	}
 
 	if (Hand == static_cast<int32>(EControllerHand::Right) || Hand == static_cast<int32>(EControllerHand::AnyHand))
 	{
-		HidOutput->RightTrigger.Frequency = UValidateHelpers::To255(Values->Frequency);
+		HidOutput->RightTrigger.Frequency = FValidateHelpers::To255(Values->Frequency);
 	}
 
 	SendOut();
@@ -478,7 +478,7 @@ void UDualSenseLibrary::SetAutomaticGun(int32 BeginStrength, int32 MiddleStrengt
 		HidOutput->LeftTrigger.Mode = 0x26;
 		HidOutput->LeftTrigger.Strengths.ActiveZones = ActiveZones;
 		HidOutput->LeftTrigger.Strengths.StrengthZones = StrengthZones;
-		HidOutput->LeftTrigger.Frequency = UValidateHelpers::To255(0.05f);
+		HidOutput->LeftTrigger.Frequency = FValidateHelpers::To255(0.05f);
 	}
 
 	if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
@@ -486,7 +486,7 @@ void UDualSenseLibrary::SetAutomaticGun(int32 BeginStrength, int32 MiddleStrengt
 		HidOutput->RightTrigger.Mode = 0x26;
 		HidOutput->RightTrigger.Strengths.ActiveZones = ActiveZones;
 		HidOutput->RightTrigger.Strengths.StrengthZones = StrengthZones;
-		HidOutput->RightTrigger.Frequency = UValidateHelpers::To255(0.05f);
+		HidOutput->RightTrigger.Frequency = FValidateHelpers::To255(0.05f);
 	}
 
 	SendOut();
@@ -498,15 +498,15 @@ void UDualSenseLibrary::SetContinuousResistance(int32 StartPosition, int32 Stren
 	if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
 	{
 		HidOutput->LeftTrigger.Mode = 0x01;
-		HidOutput->LeftTrigger.Strengths.ActiveZones = UValidateHelpers::To255(StartPosition, 8);
-		HidOutput->LeftTrigger.Strengths.StrengthZones = UValidateHelpers::To255(Strength, 9);
+		HidOutput->LeftTrigger.Strengths.ActiveZones = FValidateHelpers::To255(StartPosition, 8);
+		HidOutput->LeftTrigger.Strengths.StrengthZones = FValidateHelpers::To255(Strength, 9);
 	}
 
 	if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
 	{
 		HidOutput->RightTrigger.Mode = 0x01;
-		HidOutput->RightTrigger.Strengths.ActiveZones = UValidateHelpers::To255(StartPosition, 8);
-		HidOutput->RightTrigger.Strengths.StrengthZones = UValidateHelpers::To255(Strength, 9);
+		HidOutput->RightTrigger.Strengths.ActiveZones = FValidateHelpers::To255(StartPosition, 8);
+		HidOutput->RightTrigger.Strengths.StrengthZones = FValidateHelpers::To255(Strength, 9);
 	}
 
 	SendOut();
@@ -565,14 +565,14 @@ void UDualSenseLibrary::SetWeapon(int32 StartPosition, int32 EndPosition, int32 
 	{
 		HidOutput->LeftTrigger.Mode = 0x25;
 		HidOutput->LeftTrigger.Strengths.ActiveZones = ActiveZones;
-		HidOutput->LeftTrigger.Strengths.StrengthZones = UValidateHelpers::To255(Strength);
+		HidOutput->LeftTrigger.Strengths.StrengthZones = FValidateHelpers::To255(Strength);
 	}
 
 	if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
 	{
 		HidOutput->RightTrigger.Mode = 0x25;
 		HidOutput->RightTrigger.Strengths.ActiveZones = ActiveZones;
-		HidOutput->RightTrigger.Strengths.StrengthZones = UValidateHelpers::To255(Strength);
+		HidOutput->RightTrigger.Strengths.StrengthZones = FValidateHelpers::To255(Strength);
 	}
 
 	SendOut();
@@ -589,7 +589,7 @@ void UDualSenseLibrary::SetGalloping(int32 StartPosition, int32 EndPosition, int
 		HidOutput->LeftTrigger.Mode = 0x23;
 		HidOutput->LeftTrigger.Strengths.ActiveZones = ActiveZones;
 		HidOutput->LeftTrigger.Strengths.TimeAndRatio = TimeAndRatio;
-		HidOutput->LeftTrigger.Frequency = UValidateHelpers::To255(Frequency);
+		HidOutput->LeftTrigger.Frequency = FValidateHelpers::To255(Frequency);
 	}
 
 	if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
@@ -597,7 +597,7 @@ void UDualSenseLibrary::SetGalloping(int32 StartPosition, int32 EndPosition, int
 		HidOutput->RightTrigger.Mode = 0x23;
 		HidOutput->RightTrigger.Strengths.ActiveZones = ActiveZones;
 		HidOutput->RightTrigger.Strengths.TimeAndRatio = TimeAndRatio;
-		HidOutput->RightTrigger.Frequency = UValidateHelpers::To255(Frequency);
+		HidOutput->RightTrigger.Frequency = FValidateHelpers::To255(Frequency);
 	}
 
 	SendOut();
@@ -621,8 +621,8 @@ void UDualSenseLibrary::SetMachine(int32 StartPosition, int32 EndPosition, int32
 		HidOutput->LeftTrigger.Mode = 0x27;
 		HidOutput->LeftTrigger.Strengths.ActiveZones = ActiveZones;
 		HidOutput->LeftTrigger.Strengths.StrengthZones = Strengths;
-		HidOutput->LeftTrigger.Strengths.Period = UValidateHelpers::To255(Period);
-		HidOutput->LeftTrigger.Frequency = UValidateHelpers::To255(Frequency);
+		HidOutput->LeftTrigger.Strengths.Period = FValidateHelpers::To255(Period);
+		HidOutput->LeftTrigger.Frequency = FValidateHelpers::To255(Frequency);
 	}
 
 	if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
@@ -630,8 +630,8 @@ void UDualSenseLibrary::SetMachine(int32 StartPosition, int32 EndPosition, int32
 		HidOutput->RightTrigger.Mode = 0x27;
 		HidOutput->RightTrigger.Strengths.ActiveZones = ActiveZones;
 		HidOutput->RightTrigger.Strengths.StrengthZones = Strengths;
-		HidOutput->RightTrigger.Strengths.Period = UValidateHelpers::To255(Period);
-		HidOutput->RightTrigger.Frequency = UValidateHelpers::To255(Frequency);
+		HidOutput->RightTrigger.Strengths.Period = FValidateHelpers::To255(Period);
+		HidOutput->RightTrigger.Frequency = FValidateHelpers::To255(Frequency);
 	}
 
 	SendOut();

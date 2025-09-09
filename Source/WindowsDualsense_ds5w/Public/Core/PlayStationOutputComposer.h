@@ -6,10 +6,9 @@
 
 #include "CoreMinimal.h"
 #include "Core/Structs/FDeviceContext.h"
-#include "PlayStationOutputComposer.generated.h"
 
 /**
- * @class UPlayStationOutputComposer
+ * @class FPlayStationOutputComposer
  *
  * A class designed to handle the composition and management of output data
  * for PlayStation controllers, such as DualSense and DualShock devices.
@@ -18,13 +17,10 @@
  * LEDs, and audio settings. The class also provides utilities for managing
  * device contexts.
  */
-UCLASS()
-class WINDOWSDUALSENSE_DS5W_API UPlayStationOutputComposer : public UObject
+class WINDOWSDUALSENSE_DS5W_API FPlayStationOutputComposer
 {
-	GENERATED_BODY()
-
 	/**
-	 * @var UPlayStationOutputComposer::CRCSeed
+	 * @var FPlayStationOutputComposer::CRCSeed
 	 *
 	 * The predefined seed value used for CRC32 hash computation.
 	 * Acts as the initial value for the hash generation algorithm employed in the Compute method.
@@ -35,7 +31,7 @@ class WINDOWSDUALSENSE_DS5W_API UPlayStationOutputComposer : public UObject
 	 * @variable HashTable
 	 *
 	 * Represents a precomputed hash lookup table specifically used within
-	 * `UPlayStationOutputComposer` for optimizing hash calculations. This table
+	 * `FPlayStationOutputComposer` for optimizing hash calculations. This table
 	 * is a key component in facilitating fast cryptographic or hash operations.
 	 *
 	 * The `HashTable` variable contains a fixed array of 256 32-bit values,
@@ -50,17 +46,7 @@ class WINDOWSDUALSENSE_DS5W_API UPlayStationOutputComposer : public UObject
 	const static UINT32 HashTable[256];
 public:
 	/**
-	 * @brief Default constructor for the UPlayStationOutputComposer class.
-	 *
-	 * Initializes a new instance of the class. This constructor sets up
-	 * the initial state for the output composer, preparing it for utilization
-	 * in composing PlayStation output-related operations.
-	 *
-	 * @return A new instance of the UPlayStationOutputComposer class.
-	 */
-	UPlayStationOutputComposer(){};
-	/**
-	 * @fn UPlayStationOutputComposer::FreeContext(FDeviceContext* Context)
+	 * @fn FPlayStationOutputComposer::FreeContext(FDeviceContext* Context)
 	 *
 	 * Releases and invalidates the provided device context, ensuring that
 	 * all associated resources are properly disposed of or reset. This method

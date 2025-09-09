@@ -149,19 +149,7 @@ public:
 	 */
 	virtual void UpdateInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
 	                         const FPlatformUserId UserId, const FInputDeviceId InputDeviceId) override;
-	
-	/**
-	 * @brief Retrieves the gamepad interface instance.
-	 *
-	 * This method provides access to the current instance of the gamepad
-	 * interface, enabling interaction with the gamepad-specific functionality.
-	 *
-	 * @return A pointer to the ISonyGamepadInterface representing the current instance.
-	 */
-	virtual ISonyGamepadInterface* Get() override
-	{
-		return this;
-	}
+
 	virtual FString GetDevicePath() override
 	{
 		return HIDDeviceContexts.Path;
