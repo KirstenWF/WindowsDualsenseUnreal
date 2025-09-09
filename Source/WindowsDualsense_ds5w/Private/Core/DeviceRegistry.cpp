@@ -20,7 +20,7 @@
 UDeviceRegistry* UDeviceRegistry::Instance;
 TMap<FString, FInputDeviceId> UDeviceRegistry::KnownDevicePaths;
 TMap<FInputDeviceId, ISonyGamepadInterface*> UDeviceRegistry::LibraryInstances;
-TMap<FString, TPair<FInputDeviceId, FPlatformUserId>> UDeviceRegistry::HistoryDevices;
+TMap<FString, FInputDeviceId> UDeviceRegistry::HistoryDevices;
 TMap<int32, TUniquePtr<FHIDPollingRunnable>> UDeviceRegistry::ActiveConnectionWatchers;
 
 float UDeviceRegistry::AccumulatorDelta = 0.0f;
@@ -201,30 +201,16 @@ void UDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
 	Devices.Reset();
 	IPlatformInputDeviceMapper::Get().GetAllInputDevicesForUser(IPlatformInputDeviceMapper::Get().GetPrimaryPlatformUser(), Devices);
 
-	bool AllocateDeviceToDefaultUser = false;
-	if (Devices.Num() <= 1)
-	{
-		AllocateDeviceToDefaultUser = true;
-	}
-	
 	const FName UniqueNamespace = TEXT("DeviceManager.WindowsDualsense");
 	const FHardwareDeviceIdentifier HardwareId(UniqueNamespace, Context.Path);
 	if (HistoryDevices.Contains(Context.Path))
 	{
-		Context.UniqueInputDeviceId = HistoryDevices[Context.Path].Key;
-		Context.UniquePlatformUserId = HistoryDevices[Context.Path].Value;
+		Context.UniqueInputDeviceId = HistoryDevices[Context.Path];
 	}
 	else
 	{
-		const FInputDeviceId NewDeviceId = IPlatformInputDeviceMapper::Get().AllocateNewInputDeviceId();
-		const FPlatformUserId UserId = AllocateDeviceToDefaultUser
-			? IPlatformInputDeviceMapper::Get().GetPrimaryPlatformUser()
-			: FPlatformUserId::CreateFromInternalId(INDEX_NONE);
-		
-		Context.UniqueInputDeviceId = NewDeviceId;
-		Context.UniquePlatformUserId = UserId;
-
-		HistoryDevices.Add(Context.Path, TPair<FInputDeviceId, FPlatformUserId>(NewDeviceId, UserId));
+		Context.UniqueInputDeviceId = IPlatformInputDeviceMapper::Get().AllocateNewInputDeviceId();
+		HistoryDevices.Add(Context.Path, Context.UniqueInputDeviceId);
 	}
 
 	SonyGamepad->_getUObject()->AddToRoot();
@@ -239,8 +225,20 @@ void UDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
 		IPlatformInputDeviceMapper::Get().GetInputDeviceConnectionState(GamepadId) !=
 		EInputDeviceConnectionState::Connected)
 	{
+		FPlatformUserId UserId = IPlatformInputDeviceMapper::Get().GetUserForInputDevice(GamepadId);
+		if (!UserId.IsValid())
+		{
+#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION < 6
+			UserId = Devices.IsEmpty()
+				? IPlatformInputDeviceMapper::Get().GetPrimaryPlatformUser()
+				: FPlatformUserId::CreateFromInternalId(INDEX_NONE);
+#else
+			UserId = IPlatformInputDeviceMapper::Get().GetPlatformUserForNewlyConnectedDevice();
+#endif
+		}
+
 		IPlatformInputDeviceMapper::Get().Internal_MapInputDeviceToUser(Context.UniqueInputDeviceId,
-		                                                                Context.UniquePlatformUserId,
+		                                                                UserId,
 		                                                                EInputDeviceConnectionState::Connected);
 	}
 

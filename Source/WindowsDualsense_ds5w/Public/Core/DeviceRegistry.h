@@ -136,7 +136,7 @@ private:
 	 * and platform user IDs. This data structure is used to track the history of devices interacting
 	 * within the system, enabling efficient querying and management of device-user relationships.
 	 */
-	static TMap<FString, TPair<FInputDeviceId, FPlatformUserId>> HistoryDevices;
+	static TMap<FString, FInputDeviceId> HistoryDevices;
 
 	/**
 	 * A static map that maintains active connections by associating unique integer identifiers with their
