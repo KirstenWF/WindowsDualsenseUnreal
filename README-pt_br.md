@@ -65,7 +65,9 @@ Este projeto serve como um guia prático para desenvolvedores que desejam ver o 
 
 Você pode baixar o projeto de exemplo *Parrot Game Sample* com a integração do DualSense diretamente do nosso repositório no GitHub.
 
-- [**Baixe o projeto de exemplo aqui**](https://drive.google.com/file/d/198Dko7ZwIX1vz9jw7RtYp4arY9Qp5bJ4/view?usp=drive_link)
+
+- [**Baixe o projeto de exemplo para o editor aqui**](https://drive.google.com/file/d/198Dko7ZwIX1vz9jw7RtYp4arY9Qp5bJ4/view?usp=drive_link)
+- [**Baixe a versão compilada do projeto de exemplo aqui**](https://drive.google.com/file/d/144hM71xZufBe29UzpTNQ1rRe0AYWC-Ka/view?usp=drive_link)
 
 
 ## 🚀 Começando

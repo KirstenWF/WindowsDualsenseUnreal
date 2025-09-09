@@ -63,11 +63,13 @@ In this sample, the following DualSense functionalities were integrated to provi
 
 This project serves as a practical guide for developers who want to see the plugin in action and learn how to integrate the unique features of the DualSense controller into their own games.
 
+
 ### Where to Download
 
 You can download the *Parrot Game Sample* with the DualSense integration directly from our GitHub repository.
 
-- [**Download the example project here**](https://drive.google.com/file/d/198Dko7ZwIX1vz9jw7RtYp4arY9Qp5bJ4/view?usp=drive_link)
+- [**Download the example project for the editor here**](https://drive.google.com/file/d/198Dko7ZwIX1vz9jw7RtYp4arY9Qp5bJ4/view?usp=drive_link)
+- [**Download the compiled version of the example project here**](https://drive.google.com/file/d/144hM71xZufBe29UzpTNQ1rRe0AYWC-Ka/view?usp=drive_link)
 
 ## 🚀 Getting Started
 
