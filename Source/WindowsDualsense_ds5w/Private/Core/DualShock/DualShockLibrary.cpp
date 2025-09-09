@@ -29,7 +29,6 @@ bool UDualShockLibrary::InitializeLibrary(const FDeviceContext& Context)
 {
 	HIDDeviceContexts = Context;
 	SetLightbar(FColor::Green, 0.0f, 0.0f);
-	UE_LOG(LogTemp, Log, TEXT("Initializing device model (DualShock 4)"));
 	return true;
 }
 

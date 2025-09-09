@@ -235,7 +235,6 @@ void FHIDDeviceInfo::InvalidateHandle(FDeviceContext* Context)
 	
 	if (Context->Handle != INVALID_HANDLE_VALUE)
 	{
-		
 		CloseHandle(Context->Handle);
 		Context->Handle = INVALID_HANDLE_VALUE;
 		Context->IsConnected = false;
@@ -246,7 +245,7 @@ void FHIDDeviceInfo::InvalidateHandle(FDeviceContext* Context)
 		ZeroMemory(Context->BufferOutput, sizeof(Context->BufferOutput));
 
 		PollResults.Remove(Context->UniqueInputDeviceId);
-		UE_LOG(LogTemp, Error, TEXT("HIDManager: InvalidateHandle"));
+		UE_LOG(LogTemp, Warning, TEXT("HIDManager: Invalidate Handle."));
 	}
 }
 
@@ -254,7 +253,6 @@ void FHIDDeviceInfo::InvalidateHandle(HANDLE Handle)
 {
 	if (Handle != INVALID_HANDLE_VALUE)
 	{
-		UE_LOG(LogTemp, Error, TEXT("HIDManager: InvalidateHandle"));
 		CloseHandle(Handle);
 	}
 }

@@ -124,6 +124,7 @@ UDeviceRegistry* UDeviceRegistry::Get()
 {
 	if (!Instance)
 	{
+		check(IsInGameThread());
 		Instance = NewObject<UDeviceRegistry>();
 		Instance->AddToRoot();
 	}
@@ -196,6 +197,16 @@ void UDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
 		return;
 	}
 
+	TArray<FInputDeviceId> Devices;
+	Devices.Reset();
+	IPlatformInputDeviceMapper::Get().GetAllInputDevicesForUser(IPlatformInputDeviceMapper::Get().GetPrimaryPlatformUser(), Devices);
+
+	bool AllocateDeviceToDefaultUser = false;
+	if (Devices.Num() <= 1)
+	{
+		AllocateDeviceToDefaultUser = true;
+	}
+	
 	const FName UniqueNamespace = TEXT("DeviceManager.WindowsDualsense");
 	const FHardwareDeviceIdentifier HardwareId(UniqueNamespace, Context.Path);
 	if (HistoryDevices.Contains(Context.Path))
@@ -206,11 +217,14 @@ void UDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
 	else
 	{
 		const FInputDeviceId NewDeviceId = IPlatformInputDeviceMapper::Get().AllocateNewInputDeviceId();
-		const FPlatformUserId NewUserId = IPlatformInputDeviceMapper::Get().AllocateNewUserId();
+		const FPlatformUserId UserId = AllocateDeviceToDefaultUser
+			? IPlatformInputDeviceMapper::Get().GetPrimaryPlatformUser()
+			: FPlatformUserId::CreateFromInternalId(INDEX_NONE);
+		
 		Context.UniqueInputDeviceId = NewDeviceId;
-		Context.UniquePlatformUserId = NewUserId;
+		Context.UniquePlatformUserId = UserId;
 
-		HistoryDevices.Add(Context.Path, TPair<FInputDeviceId, FPlatformUserId>(NewDeviceId, NewUserId));
+		HistoryDevices.Add(Context.Path, TPair<FInputDeviceId, FPlatformUserId>(NewDeviceId, UserId));
 	}
 
 	SonyGamepad->_getUObject()->AddToRoot();
