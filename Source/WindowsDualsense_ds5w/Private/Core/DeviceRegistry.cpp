@@ -11,10 +11,10 @@
 #include "Core/DualSense/DualSenseLibrary.h"
 #include "Core/DualShock/DualShockLibrary.h"
 #include "GameFramework/InputSettings.h"
-#include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
 #include "Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h"
 #include "Core/Structs/FDeviceContext.h"
 #include "Core/Structs/FOutputContext.h"
+#include "Runtime/Launch/Resources/Version.h"
 #include "Core/Interfaces/SonyGamepadInterface.h"
 
 UDeviceRegistry* UDeviceRegistry::Instance;
