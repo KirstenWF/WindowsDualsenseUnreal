@@ -120,13 +120,13 @@ private:
 	 * This map is used to store and manage the lifecycle of gamepad interface objects, enabling efficient lookup and access
 	 * to the respective implementations for handling Sony gamepad interactions.
 	 */
-	TMap<FInputDeviceId, ISonyGamepadInterface*> LibraryInstances;
+	static TMap<FInputDeviceId, ISonyGamepadInterface*> LibraryInstances;
 	/**
 	 * A static map that associates device paths represented as strings with unique input device
 	 * identifiers. This serves as a lookup mechanism to manage and track known device connections
 	 * effectively within the system.
 	 */
-	TMap<FString, FInputDeviceId> KnownDevicePaths;
+	static TMap<FString, FInputDeviceId> KnownDevicePaths;
 	/**
 	 * A static mapping that associates unique device identifiers with pairs containing input device IDs
 	 * and platform user IDs. This data structure is used to track the history of devices interacting
@@ -138,5 +138,5 @@ private:
 	 * corresponding HID polling runnable instances. This map is used to manage and monitor ongoing input
 	 * device connection activities and ensures proper lifecycle control of the associated polling threads.
 	 */
-	TMap<int32, TUniquePtr<FHIDPollingRunnable>> ActiveConnectionWatchers;
+	static TMap<int32, TUniquePtr<FHIDPollingRunnable>> ActiveConnectionWatchers;
 };

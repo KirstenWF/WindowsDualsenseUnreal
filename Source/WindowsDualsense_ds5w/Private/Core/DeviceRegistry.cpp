@@ -18,6 +18,11 @@
 #include "Core/Interfaces/SonyGamepadInterface.h"
 
 TSharedPtr<FDeviceRegistry> FDeviceRegistry::Instance;
+TMap<FString, FInputDeviceId> FDeviceRegistry::KnownDevicePaths;
+TMap<FString, FInputDeviceId> FDeviceRegistry::HistoryDevices;
+TMap<FInputDeviceId, ISonyGamepadInterface*> FDeviceRegistry::LibraryInstances;
+TMap<int32, TUniquePtr<FHIDPollingRunnable>> FDeviceRegistry::ActiveConnectionWatchers;
+
 bool PrimaryTick = true;
 float AccumulateSecurity = 0;
 void FDeviceRegistry::DetectedChangeConnections(float DeltaTime)
@@ -74,7 +79,7 @@ void FDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 						if (Manager->LibraryInstances.Contains(DeviceId))
 						{
 							FPlatformUserId OldUser = IPlatformInputDeviceMapper::Get().GetUserForInputDevice(DeviceId);
-							IPlatformInputDeviceMapper::Get().Internal_ChangeInputDeviceUserMapping(DeviceId, PLATFORMUSERID_NONE, OldUser);
+							IPlatformInputDeviceMapper::Get().Internal_ChangeInputDeviceUserMapping(DeviceId, INDEX_NONE, OldUser);
 							IPlatformInputDeviceMapper::Get().Internal_SetInputDeviceConnectionState(DeviceId, EInputDeviceConnectionState::Disconnected);
 
 							Manager->RemoveLibraryInstance(DeviceId.GetId());
