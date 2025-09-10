@@ -17,19 +17,15 @@
 #include "Runtime/Launch/Resources/Version.h"
 #include "Core/Interfaces/SonyGamepadInterface.h"
 
-UDeviceRegistry* UDeviceRegistry::Instance;
-TMap<FString, FInputDeviceId> UDeviceRegistry::KnownDevicePaths;
-TMap<FInputDeviceId, ISonyGamepadInterface*> UDeviceRegistry::LibraryInstances;
-TMap<FString, FInputDeviceId> UDeviceRegistry::HistoryDevices;
-TMap<int32, TUniquePtr<FHIDPollingRunnable>> UDeviceRegistry::ActiveConnectionWatchers;
-
-float UDeviceRegistry::AccumulatorDelta = 0.0f;
-bool UDeviceRegistry::bIsDeviceDetectionInProgress = false;
+TSharedPtr<FDeviceRegistry> FDeviceRegistry::Instance;
+TMap<FString, FInputDeviceId> FDeviceRegistry::KnownDevicePaths;
+TMap<FString, FInputDeviceId> FDeviceRegistry::HistoryDevices;
+TMap<FInputDeviceId, ISonyGamepadInterface*> FDeviceRegistry::LibraryInstances;
+TMap<int32, TUniquePtr<FHIDPollingRunnable>> FDeviceRegistry::ActiveConnectionWatchers;
 
 bool PrimaryTick = true;
 float AccumulateSecurity = 0;
-
-void UDeviceRegistry::DetectedChangeConnections(float DeltaTime)
+void FDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 {
 	AccumulateSecurity += DeltaTime;
 	if (bIsDeviceDetectionInProgress && AccumulateSecurity >= 1.f)
@@ -51,94 +47,87 @@ void UDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 	PrimaryTick = false;
 	bIsDeviceDetectionInProgress = true;
 
-	TWeakObjectPtr<UDeviceRegistry> WeakManager = Get();
-	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [WeakManager]()
+	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [WeakManager = AsWeak()]()
 	{
-		const TUniquePtr<FHIDDeviceInfo> DeviceInfo = MakeUnique<FHIDDeviceInfo>();
+			TArray<FDeviceContext> DetectedDevices;
+			DetectedDevices.Reset();
 
-		TArray<FDeviceContext> DetectedDevices;
-		DetectedDevices.Reset();
-
-		DeviceInfo->Detect(DetectedDevices);
-
-		AsyncTask(ENamedThreads::GameThread, [WeakManager, DetectedDevices = MoveTemp(DetectedDevices)]() mutable
-		{
-			if (!WeakManager.IsValid())
+			FHIDDeviceInfo::Detect(DetectedDevices);
+			AsyncTask(ENamedThreads::GameThread, [WeakManager, DetectedDevices = MoveTemp(DetectedDevices)]() mutable
 			{
-				return;
-			}
-
-			const UDeviceRegistry* Manager = WeakManager.Get();
-			const TUniquePtr<FHIDDeviceInfo> HidManagerObj;
-
-			
-			
-			TSet<FString> CurrentlyConnectedPaths;
-			for (const FDeviceContext& Context : DetectedDevices)
-			{
-				CurrentlyConnectedPaths.Add(Context.Path);
-			}
-
-			TArray<FString> DisconnectedPaths;
-			for (const TPair<FString, FInputDeviceId>& KnownDevice : Manager->KnownDevicePaths)
-			{
-				const FString& Path = KnownDevice.Key;
-				const FInputDeviceId& DeviceId = KnownDevice.Value;
-				if (!CurrentlyConnectedPaths.Contains(Path))
+				const TSharedPtr<FDeviceRegistry> Manager = WeakManager.Pin();
+				if (!Manager)
 				{
-					if (Manager->LibraryInstances.Contains(DeviceId))
-					{
-						FPlatformUserId OldUser = IPlatformInputDeviceMapper::Get().GetUserForInputDevice(DeviceId);
-						IPlatformInputDeviceMapper::Get().Internal_ChangeInputDeviceUserMapping(DeviceId, PLATFORMUSERID_NONE, OldUser);
-						IPlatformInputDeviceMapper::Get().Internal_SetInputDeviceConnectionState(DeviceId, EInputDeviceConnectionState::Disconnected);
+					return;
+				}
 
-						Manager->RemoveLibraryInstance(DeviceId.GetId());
-						DisconnectedPaths.Add(Path);
+				const TUniquePtr<FHIDDeviceInfo> HidManagerObj;
+			
+				TSet<FString> CurrentlyConnectedPaths;
+				for (const FDeviceContext& Context : DetectedDevices)
+				{
+					CurrentlyConnectedPaths.Add(Context.Path);
+				}
+
+				TArray<FString> DisconnectedPaths;
+				for (const TPair<FString, FInputDeviceId>& KnownDevice : Manager->KnownDevicePaths)
+				{
+					const FString& Path = KnownDevice.Key;
+					const FInputDeviceId& DeviceId = KnownDevice.Value;
+					if (!CurrentlyConnectedPaths.Contains(Path))
+					{
+						if (Manager->LibraryInstances.Contains(DeviceId))
+						{
+							FPlatformUserId OldUser = IPlatformInputDeviceMapper::Get().GetUserForInputDevice(DeviceId);
+							IPlatformInputDeviceMapper::Get().Internal_ChangeInputDeviceUserMapping(DeviceId, INDEX_NONE, OldUser);
+							IPlatformInputDeviceMapper::Get().Internal_SetInputDeviceConnectionState(DeviceId, EInputDeviceConnectionState::Disconnected);
+
+							Manager->RemoveLibraryInstance(DeviceId.GetId());
+							DisconnectedPaths.Add(Path);
+						}
 					}
 				}
-			}
 
-			for (const FString& Path : DisconnectedPaths)
-			{
-				if (Manager->KnownDevicePaths.Contains(Path))
+				for (const FString& Path : DisconnectedPaths)
 				{
-					Manager->KnownDevicePaths.Remove(Path);
-				}
-			}
-
-			for (FDeviceContext& Context : DetectedDevices)
-			{
-				if (!Manager->KnownDevicePaths.Contains(Context.Path))
-				{
-					Context.Output = FOutputContext();
-					Context.Handle = HidManagerObj->CreateHandle(&Context);
-
-					if (Context.Handle == INVALID_HANDLE_VALUE)
+					if (Manager->KnownDevicePaths.Contains(Path))
 					{
-						continue;
+						Manager->KnownDevicePaths.Remove(Path);
 					}
-
-					Manager->CreateLibraryInstance(Context);
 				}
-			}
-			
-			Manager->bIsDeviceDetectionInProgress = false;
-		});
+
+				for (FDeviceContext& Context : DetectedDevices)
+				{
+					if (!Manager->KnownDevicePaths.Contains(Context.Path))
+					{
+						Context.Output = FOutputContext();
+						Context.Handle = HidManagerObj->CreateHandle(&Context);
+
+						if (Context.Handle == INVALID_HANDLE_VALUE)
+						{
+							continue;
+						}
+
+						Manager->CreateLibraryInstance(Context);
+					}
+				}
+				
+				Manager->bIsDeviceDetectionInProgress = false;
+			});
 	});
 }
 
-UDeviceRegistry* UDeviceRegistry::Get()
+TSharedPtr<FDeviceRegistry> FDeviceRegistry::Get()
 {
 	if (!Instance)
 	{
 		check(IsInGameThread());
-		Instance = NewObject<UDeviceRegistry>();
-		Instance->AddToRoot();
+		Instance = MakeShared<FDeviceRegistry>();
 	}
 	return Instance;
 }
 
-UDeviceRegistry::~UDeviceRegistry()
+FDeviceRegistry::~FDeviceRegistry()
 {
 	TArray<int32> WatcherKeys;
 	ActiveConnectionWatchers.GetKeys(WatcherKeys);
@@ -149,7 +138,7 @@ UDeviceRegistry::~UDeviceRegistry()
 	}
 }
 
-ISonyGamepadInterface* UDeviceRegistry::GetLibraryInstance(int32 ControllerId)
+ISonyGamepadInterface* FDeviceRegistry::GetLibraryInstance(int32 ControllerId)
 {
 	const FInputDeviceId GamepadId = FInputDeviceId::CreateFromInternalId(ControllerId);
 	if (!LibraryInstances.Contains(GamepadId))
@@ -164,7 +153,7 @@ ISonyGamepadInterface* UDeviceRegistry::GetLibraryInstance(int32 ControllerId)
 	return LibraryInstances[GamepadId];
 }
 
-void UDeviceRegistry::RemoveLibraryInstance(int32 ControllerId)
+void FDeviceRegistry::RemoveLibraryInstance(int32 ControllerId)
 {
 	FInputDeviceId GamepadId = FInputDeviceId::CreateFromInternalId(ControllerId);
 	if (
@@ -186,7 +175,7 @@ void UDeviceRegistry::RemoveLibraryInstance(int32 ControllerId)
 	const int32 NumRemoved = ActiveConnectionWatchers.Remove(ControllerId);
 }
 
-void UDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
+void FDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
 {
 	ISonyGamepadInterface* SonyGamepad = nullptr;
 	if (Context.DeviceType == EDeviceType::DualSense || Context.DeviceType == EDeviceType::DualSenseEdge)
@@ -275,7 +264,7 @@ void UDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
 	}
 }
 
-void UDeviceRegistry::RemoveAllLibraryInstance()
+void FDeviceRegistry::RemoveAllLibraryInstance()
 {
 	for (const auto& LibraryInstance : LibraryInstances)
 	{
@@ -285,12 +274,12 @@ void UDeviceRegistry::RemoveAllLibraryInstance()
 }
 
 
-int32 UDeviceRegistry::GetAllocatedDevices()
+int32 FDeviceRegistry::GetAllocatedDevices()
 {
 	return LibraryInstances.Num();
 }
 
-TMap<FInputDeviceId, ISonyGamepadInterface*> UDeviceRegistry::GetAllocatedDevicesMap()
+TMap<FInputDeviceId, ISonyGamepadInterface*> FDeviceRegistry::GetAllocatedDevicesMap()
 {
 	return LibraryInstances;
 }

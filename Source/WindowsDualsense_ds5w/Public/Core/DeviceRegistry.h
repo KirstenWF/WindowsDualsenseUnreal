@@ -11,20 +11,16 @@
 #include "HAL/PlatformProcess.h"
 #include "HAL/RunnableThread.h"
 #include "Interfaces/SonyGamepadInterface.h"
-#include "UObject/Object.h"
-#include "DeviceRegistry.generated.h"
 
 /**
  * A manager class that handles the creation, storage, and lifecycle management of device library
  * instances associated with Sony gamepad controllers. This class ensures proper initialization,
  * cleanup, and access control for the controller devices.
  */
-UCLASS()
-class WINDOWSDUALSENSE_DS5W_API UDeviceRegistry : public UObject
+class WINDOWSDUALSENSE_DS5W_API FDeviceRegistry : public TSharedFromThis<FDeviceRegistry>, public FNoncopyable
 {
-	GENERATED_BODY()
 	/**
-	 * Retrieves the static instance of the UDeviceRegistry class. This method
+	 * Retrieves the static instance of the FDeviceRegistry class. This method
 	 * ensures that only a single instance of the manager class is created and provides
 	 * global access to it for managing device library instances of Sony gamepad controllers.
 	 *
@@ -32,13 +28,13 @@ class WINDOWSDUALSENSE_DS5W_API UDeviceRegistry : public UObject
 	 *         if the instance has not been initialized.
 	 */
 public:
-	static UDeviceRegistry* Get();
+	static TSharedPtr<FDeviceRegistry> Get();
 	/**
-	 * Destructor for the UDeviceRegistry class. Responsible for cleaning up resources associated with the device
+	 * Destructor for the FDeviceRegistry class. Responsible for cleaning up resources associated with the device
 	 * library instances. Ensures that all active connection watchers are properly removed and their corresponding
 	 * controller instances are cleaned up to prevent resource leakage.
 	 */
-	virtual ~UDeviceRegistry() override;
+	virtual ~FDeviceRegistry();
 	/**
 	 * Retrieves the total number of currently allocated device library instances.
 	 * This method provides a count of the devices being managed by the container,
@@ -46,7 +42,7 @@ public:
 	 *
 	 * @return The number of allocated device library instances.
 	 */
-	static int32 GetAllocatedDevices();
+	int32 GetAllocatedDevices();
 	/**
 	 * Retrieves the library instance associated with a specific Sony gamepad controller,
 	 * identified by its unique controller ID. This method ensures that the appropriate
@@ -58,20 +54,20 @@ public:
 	 * @return A pointer to the ISonyGamepadInterface instance corresponding to the specified
 	 *         controller ID, or nullptr if no matching instance exists.
 	 */
-	static ISonyGamepadInterface* GetLibraryInstance(int32 ControllerId);
+	ISonyGamepadInterface* GetLibraryInstance(int32 ControllerId);
 	/**
 	 * Retrieves the map of allocated device library instances. This map associates unique integer
 	 * keys with instances implementing the Sony gamepad interface, allowing access to the currently
 	 * managed devices.
 	 */
-	static TMap<FInputDeviceId, ISonyGamepadInterface*> GetAllocatedDevicesMap();
+	TMap<FInputDeviceId, ISonyGamepadInterface*> GetAllocatedDevicesMap();
 	/**
 	 * Removes all existing library instances managed by the device container. This method
 	 * is responsible for cleaning up and unloading all currently allocated Sony gamepad
 	 * controllers' library resources, ensuring proper resource management and preventing
 	 * potential memory leaks.
 	 */
-	static void RemoveAllLibraryInstance();
+	void RemoveAllLibraryInstance();
 	/**
 	 * Removes a library instance associated with the specified controller ID, disconnecting the
 	 * corresponding input device if it is currently connected. Ensures proper removal and cleanup
@@ -79,7 +75,7 @@ public:
 	 *
 	 * @param ControllerId The unique identifier of the controller whose library instance is to be removed.
 	 */
-	static void RemoveLibraryInstance(int32 ControllerId);
+	void RemoveLibraryInstance(int32 ControllerId);
 	/**
 	 * Creates an instance of a device library based on the provided device context. It initializes and
 	 * manages the lifecycle of the Sony gamepad library for controllers like DualSense, DualSense Edge,
@@ -89,7 +85,7 @@ public:
 	 * @param Context The device context containing the type of controller, its path,
 	 *                and information required for initialization and identification.
 	 */
-	static void CreateLibraryInstance(FDeviceContext& Context);
+	void CreateLibraryInstance(FDeviceContext& Context);
 	/**
 	 * Updates the device container manager at regular intervals by processing connected and
 	 * disconnected devices. It handles device discovery, connection state updates, lifecycle
@@ -106,19 +102,19 @@ private:
 	 * A floating-point variable that represents the change or difference in the accumulator value over time.
 	 * Typically used to measure incremental adjustments or deltas in processing or calculations.
 	 */
-	static float AccumulatorDelta;
+	float AccumulatorDelta = 0;
 	/**
 	 * A boolean variable indicating whether the device detection process is currently active.
 	 * Used to track the ongoing state of device discovery and initialization within the device manager.
 	 */
-	static bool bIsDeviceDetectionInProgress;
+	bool bIsDeviceDetectionInProgress = false;
 	/**
-	 * A static instance of the UDeviceRegistry, serving as the singleton instance
+	 * A static instance of the FDeviceRegistry, serving as the singleton instance
 	 * for managing device library instances of Sony gamepad controllers. This variable
 	 * ensures global access and consistent management of the controller devices, while
 	 * enforcing a single unique instance of the manager class.
 	 */
-	static UDeviceRegistry* Instance;
+	static TSharedPtr<FDeviceRegistry> Instance;
 	/**
 	 * A static map that holds associations between input device IDs and their corresponding Sony gamepad interface instances.
 	 * This map is used to store and manage the lifecycle of gamepad interface objects, enabling efficient lookup and access
@@ -137,12 +133,10 @@ private:
 	 * within the system, enabling efficient querying and management of device-user relationships.
 	 */
 	static TMap<FString, FInputDeviceId> HistoryDevices;
-
 	/**
 	 * A static map that maintains active connections by associating unique integer identifiers with their
 	 * corresponding HID polling runnable instances. This map is used to manage and monitor ongoing input
 	 * device connection activities and ensures proper lifecycle control of the associated polling threads.
 	 */
 	static TMap<int32, TUniquePtr<FHIDPollingRunnable>> ActiveConnectionWatchers;
-
 };
