@@ -28,6 +28,7 @@ bool UDeviceRegistry::bIsDeviceDetectionInProgress = false;
 
 bool PrimaryTick = true;
 float AccumulateSecurity = 0;
+
 void UDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 {
 	AccumulateSecurity += DeltaTime;
@@ -35,7 +36,7 @@ void UDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 	{
 		bIsDeviceDetectionInProgress = false;
 	}
-	
+
 	if (!PrimaryTick)
 	{
 		AccumulatorDelta += DeltaTime;
@@ -53,70 +54,75 @@ void UDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 	TWeakObjectPtr<UDeviceRegistry> WeakManager = Get();
 	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [WeakManager]()
 	{
-			const TUniquePtr<FHIDDeviceInfo> DeviceInfo = MakeUnique<FHIDDeviceInfo>();
-		
-			TArray<FDeviceContext> DetectedDevices;
-			DetectedDevices.Reset();
+		const TUniquePtr<FHIDDeviceInfo> DeviceInfo = MakeUnique<FHIDDeviceInfo>();
 
-			DeviceInfo->Detect(DetectedDevices);
-			
-			AsyncTask(ENamedThreads::GameThread, [WeakManager, DetectedDevices = MoveTemp(DetectedDevices)]() mutable
+		TArray<FDeviceContext> DetectedDevices;
+		DetectedDevices.Reset();
+
+		DeviceInfo->Detect(DetectedDevices);
+
+		AsyncTask(ENamedThreads::GameThread, [WeakManager, DetectedDevices = MoveTemp(DetectedDevices)]() mutable
+		{
+			if (!WeakManager.IsValid())
 			{
-				if (!WeakManager.IsValid())
-				{
-					return;
-				}
+				return;
+			}
 
-				const UDeviceRegistry* Manager = WeakManager.Get();
-				const TUniquePtr<FHIDDeviceInfo> HidManagerObj;
+			const UDeviceRegistry* Manager = WeakManager.Get();
+			const TUniquePtr<FHIDDeviceInfo> HidManagerObj;
 
-				TSet<FString> CurrentlyConnectedPaths;
-				for (const FDeviceContext& Context : DetectedDevices)
-				{
-					CurrentlyConnectedPaths.Add(Context.Path);
-				}
+			
+			
+			TSet<FString> CurrentlyConnectedPaths;
+			for (const FDeviceContext& Context : DetectedDevices)
+			{
+				CurrentlyConnectedPaths.Add(Context.Path);
+			}
 
-				TArray<FString> DisconnectedPaths;
-				for (const TPair<FString, FInputDeviceId>& KnownDevice : Manager->KnownDevicePaths)
+			TArray<FString> DisconnectedPaths;
+			for (const TPair<FString, FInputDeviceId>& KnownDevice : Manager->KnownDevicePaths)
+			{
+				const FString& Path = KnownDevice.Key;
+				const FInputDeviceId& DeviceId = KnownDevice.Value;
+				if (!CurrentlyConnectedPaths.Contains(Path))
 				{
-					const FString& Path = KnownDevice.Key;
-					const FInputDeviceId& DeviceId = KnownDevice.Value;
-					if (!CurrentlyConnectedPaths.Contains(Path))
+					if (Manager->LibraryInstances.Contains(DeviceId))
 					{
-						if (Manager->LibraryInstances.Contains(DeviceId))
-						{
-							IPlatformInputDeviceMapper::Get().Internal_SetInputDeviceConnectionState(DeviceId, EInputDeviceConnectionState::Disconnected);
-							Manager->RemoveLibraryInstance(DeviceId.GetId());
-							DisconnectedPaths.Add(Path);
-						}
+						IPlatformInputDeviceMapper::Get().Internal_ChangeInputDeviceUserMapping(DeviceId, PLATFORMUSERID_NONE, 0);
+						IPlatformInputDeviceMapper::Get().Internal_SetInputDeviceConnectionState(DeviceId, EInputDeviceConnectionState::Invalid);
+
+						Manager->RemoveLibraryInstance(DeviceId.GetId());
+						DisconnectedPaths.Add(Path);
 					}
 				}
+			}
 
-				for (const FString& Path : DisconnectedPaths)
+			for (const FString& Path : DisconnectedPaths)
+			{
+				if (Manager->KnownDevicePaths.Contains(Path))
 				{
-					if (Manager->KnownDevicePaths.Contains(Path))
-					{
-						Manager->KnownDevicePaths.Remove(Path);	
-					}
+					Manager->KnownDevicePaths.Remove(Path);
 				}
-				
-				for (FDeviceContext& Context : DetectedDevices)
-				{
-					if (!Manager->KnownDevicePaths.Contains(Context.Path))
-					{
-						Context.Output = FOutputContext();
-						Context.Handle = HidManagerObj->CreateHandle(&Context);
+			}
 
-						if (Context.Handle == INVALID_HANDLE_VALUE)
-						{
-							continue;
-						}
-						
-						Manager->CreateLibraryInstance(Context);
+			for (FDeviceContext& Context : DetectedDevices)
+			{
+				if (!Manager->KnownDevicePaths.Contains(Context.Path))
+				{
+					Context.Output = FOutputContext();
+					Context.Handle = HidManagerObj->CreateHandle(&Context);
+
+					if (Context.Handle == INVALID_HANDLE_VALUE)
+					{
+						continue;
 					}
+
+					Manager->CreateLibraryInstance(Context);
 				}
-				Manager->bIsDeviceDetectionInProgress = false;
-			});
+			}
+			
+			Manager->bIsDeviceDetectionInProgress = false;
+		});
 	});
 }
 
@@ -199,7 +205,15 @@ void UDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
 
 	TArray<FInputDeviceId> Devices;
 	Devices.Reset();
-	IPlatformInputDeviceMapper::Get().GetAllInputDevicesForUser(IPlatformInputDeviceMapper::Get().GetPrimaryPlatformUser(), Devices);
+	
+	IPlatformInputDeviceMapper::Get().GetAllInputDevicesForUser(
+		IPlatformInputDeviceMapper::Get().GetPrimaryPlatformUser(), Devices);
+
+	bool AllocateDeviceToDefaultUser = false;
+	if (Devices.Num() <= 1)
+	{
+		AllocateDeviceToDefaultUser = true;
+	}
 
 	const FName UniqueNamespace = TEXT("DeviceManager.WindowsDualsense");
 	const FHardwareDeviceIdentifier HardwareId(UniqueNamespace, Context.Path);
@@ -229,9 +243,10 @@ void UDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
 		if (!UserId.IsValid())
 		{
 #if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION < 6
-			UserId = Devices.IsEmpty()
+			UserId = AllocateDeviceToDefaultUser
 				? IPlatformInputDeviceMapper::Get().GetPrimaryPlatformUser()
-				: FPlatformUserId::CreateFromInternalId(INDEX_NONE);
+				: IPlatformInputDeviceMapper::Get().AllocateNewUserId();
+
 #else
 			UserId = IPlatformInputDeviceMapper::Get().GetPlatformUserForNewlyConnectedDevice();
 #endif
@@ -242,11 +257,12 @@ void UDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
 		                                                                EInputDeviceConnectionState::Connected);
 	}
 
+
 	if (ActiveConnectionWatchers.Contains(Context.UniqueInputDeviceId.GetId()))
 	{
 		ActiveConnectionWatchers.Remove(Context.UniqueInputDeviceId.GetId());
 	}
-	
+
 	auto WatcherRunnable = MakeUnique<FHIDPollingRunnable>(
 		MoveTemp(Context.Handle),
 		std::chrono::milliseconds(150)

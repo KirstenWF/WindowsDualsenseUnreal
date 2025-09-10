@@ -49,31 +49,12 @@ bool USonyGamepadProxy::DeviceIsConnected(int32 ControllerId)
 	{
 		return false;
 	}
-	
-	ISonyGamepadInterface* Gamepad = UDeviceRegistry::Get()->GetLibraryInstance(DeviceId.GetId());
-	if (!Gamepad)
-	{
-		return false;
-	}
-	
-	return true;
-}
 
-bool USonyGamepadProxy::DeviceDisconnect(int32 ControllerId)
-{
-	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
-	if (!DeviceId.IsValid())
+	if (const ISonyGamepadInterface* Gamepad = UDeviceRegistry::Get()->GetLibraryInstance(DeviceId.GetId()); !Gamepad)
 	{
 		return false;
 	}
 	
-	ISonyGamepadInterface* Gamepad = UDeviceRegistry::Get()->GetLibraryInstance(DeviceId.GetId());
-	if (!Gamepad)
-	{
-		return true;
-	}
-	
-	Gamepad->Disconnect();
 	return true;
 }
 

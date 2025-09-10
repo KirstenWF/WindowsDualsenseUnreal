@@ -691,27 +691,25 @@ void UDualSenseLibrary::StopAll()
 	HidOutput->Feature.VibrationMode = 0xFF;
 	HidOutput->Feature.FeatureMode = 0xF7;
 	HidOutput->PlayerLed.Brightness = 0x00;
-	if (ControllerID == 0 || ControllerID > 3)
-	{
-		HidOutput->Lightbar = {0, 0, 255, 255};
-		HidOutput->PlayerLed.Led = static_cast<unsigned char>(ELedPlayerEnum::One);
-	}
+	HidOutput->Lightbar = {0, 0, 255};
 	
-	if (ControllerID == 1)
+	if (ControllerID <= 1)
 	{
-		HidOutput->Lightbar = {255, 0, 0, 255};
-		HidOutput->PlayerLed.Led = static_cast<unsigned char>(ELedPlayerEnum::Two);
+		HidOutput->PlayerLed.Led = static_cast<unsigned char>(ELedPlayerEnum::One);
 	}
 	
 	if (ControllerID == 2)
 	{
-		HidOutput->Lightbar = {0, 255, 0, 255};
-		HidOutput->PlayerLed.Led = static_cast<unsigned char>(ELedPlayerEnum::Three);
+		HidOutput->PlayerLed.Led = static_cast<unsigned char>(ELedPlayerEnum::Two);
 	}
 	
 	if (ControllerID == 3)
 	{
-		HidOutput->Lightbar = {255, 255, 255, 255};
+		HidOutput->PlayerLed.Led = static_cast<unsigned char>(ELedPlayerEnum::Three);
+	}
+	
+	if (ControllerID >= 4)
+	{
 		HidOutput->PlayerLed.Led = static_cast<unsigned char>(ELedPlayerEnum::All);
 	}
 	SendOut();
