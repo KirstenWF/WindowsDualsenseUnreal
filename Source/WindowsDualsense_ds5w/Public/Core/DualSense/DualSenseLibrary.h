@@ -426,20 +426,6 @@ public:
 		ControllerID = Id;
 	}
 	/**
-	 * @brief Provides access to the implementation of the Sony gamepad interface.
-	 *
-	 * This method retrieves the current instance as an implementation of the
-	 * ISonyGamepadInterface, ensuring that the object adheres to the interface's
-	 * expected functionality. It is typically used to expose the interface implementation
-	 * for interaction with other components or systems that rely on the ISonyGamepadInterface.
-	 *
-	 * @return A pointer to the current instance as an ISonyGamepadInterface.
-	 */
-	virtual ISonyGamepadInterface* Get() override
-	{
-		return this;
-	}
-	/**
 	 * @brief Sets the haptic feedback values for the specified hand of the DualSense controller.
 	 *
 	 * This function configures the haptic feedback characteristics (e.g., frequency) for either

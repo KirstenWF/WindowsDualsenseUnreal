@@ -35,7 +35,7 @@ bool UDualShockLibrary::InitializeLibrary(const FDeviceContext& Context)
 void UDualShockLibrary::ShutdownLibrary()
 {
 	ButtonStates.Reset();
-	UPlayStationOutputComposer::FreeContext(&HIDDeviceContexts);
+	FPlayStationOutputComposer::FreeContext(&HIDDeviceContexts);
 }
 
 bool UDualShockLibrary::IsConnected()
@@ -50,7 +50,7 @@ void UDualShockLibrary::SendOut()
 		return;
 	}
 	
-	UPlayStationOutputComposer::OutputDualShock(&HIDDeviceContexts);
+	FPlayStationOutputComposer::OutputDualShock(&HIDDeviceContexts);
 }
 
 void UDualShockLibrary::CheckButtonInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
@@ -191,8 +191,8 @@ void UDualShockLibrary::SetVibration(const FForceFeedbackValues& Values)
 	const float LeftRumble = FMath::Max(Values.LeftLarge, Values.LeftSmall);
 	const float RightRumble = FMath::Max(Values.RightLarge, Values.RightSmall);
 
-	const unsigned char OutputLeft = static_cast<unsigned char>(UValidateHelpers::To255(LeftRumble));
-	const unsigned char OutputRight = static_cast<unsigned char>(UValidateHelpers::To255(RightRumble));
+	const unsigned char OutputLeft = static_cast<unsigned char>(FValidateHelpers::To255(LeftRumble));
+	const unsigned char OutputRight = static_cast<unsigned char>(FValidateHelpers::To255(RightRumble));
 	if (HidOutput->Rumbles.Left != OutputLeft || HidOutput->Rumbles.Right != OutputRight)
 	{
 		HidOutput->Rumbles = {OutputLeft, OutputRight};
@@ -207,8 +207,8 @@ void UDualShockLibrary::SetLightbar(FColor Color, float BrithnessTime, float Tog
 	HidOutput->Lightbar.G = Color.G;
 	HidOutput->Lightbar.B = Color.B;
 
-	HidOutput->FlashLigthbar.Bright_Time = static_cast<unsigned char>(UValidateHelpers::To255(BrithnessTime));
-	HidOutput->FlashLigthbar.Toggle_Time = static_cast<unsigned char>(UValidateHelpers::To255(ToggleTime));
+	HidOutput->FlashLigthbar.Bright_Time = static_cast<unsigned char>(FValidateHelpers::To255(BrithnessTime));
+	HidOutput->FlashLigthbar.Toggle_Time = static_cast<unsigned char>(FValidateHelpers::To255(ToggleTime));
 	SendOut();
 }
 

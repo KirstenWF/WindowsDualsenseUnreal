@@ -7,14 +7,14 @@
 #include "Core/HIDDeviceInfo.h"
 #include "Core/Structs/FDeviceContext.h"
 
-const UINT32 UPlayStationOutputComposer::CRCSeed = 0xeada2d49;
+const UINT32 FPlayStationOutputComposer::CRCSeed = 0xeada2d49;
 
-void UPlayStationOutputComposer::FreeContext(FDeviceContext* Context)
+void FPlayStationOutputComposer::FreeContext(FDeviceContext* Context)
 {
 	FHIDDeviceInfo::InvalidateHandle(Context);
 }
 
-void UPlayStationOutputComposer::OutputDualShock(FDeviceContext* DeviceContext)
+void FPlayStationOutputComposer::OutputDualShock(FDeviceContext* DeviceContext)
 {
 	const FOutputContext* HidOut = &DeviceContext->Output;
 
@@ -58,7 +58,7 @@ void UPlayStationOutputComposer::OutputDualShock(FDeviceContext* DeviceContext)
 	FHIDDeviceInfo::Write(DeviceContext);
 }
 
-void UPlayStationOutputComposer::OutputDualSense(FDeviceContext* DeviceContext)
+void FPlayStationOutputComposer::OutputDualSense(FDeviceContext* DeviceContext)
 {
 	const size_t Padding = DeviceContext->ConnectionType == Bluetooth ? 2 : 1;
 	DeviceContext->BufferOutput[0] = DeviceContext->ConnectionType == Bluetooth ? 0x31 : 0x02;
@@ -105,7 +105,7 @@ void UPlayStationOutputComposer::OutputDualSense(FDeviceContext* DeviceContext)
 	FHIDDeviceInfo::Write(DeviceContext);
 }
 
-void UPlayStationOutputComposer::SetTriggerEffects(unsigned char* Trigger, FHapticTriggers& Effect)
+void FPlayStationOutputComposer::SetTriggerEffects(unsigned char* Trigger, FHapticTriggers& Effect)
 {
 	Trigger[0x0] = Effect.Mode;
 
@@ -192,7 +192,7 @@ void UPlayStationOutputComposer::SetTriggerEffects(unsigned char* Trigger, FHapt
 	}
 }
 
-const UINT32 UPlayStationOutputComposer::HashTable[256] = {
+const UINT32 FPlayStationOutputComposer::HashTable[256] = {
 	0xd202ef8d, 0xa505df1b, 0x3c0c8ea1, 0x4b0bbe37, 0xd56f2b94, 0xa2681b02, 0x3b614ab8, 0x4c667a2e,
 	0xdcd967bf, 0xabde5729, 0x32d70693, 0x45d03605, 0xdbb4a3a6, 0xacb39330, 0x35bac28a, 0x42bdf21c,
 	0xcfb5ffe9, 0xb8b2cf7f, 0x21bb9ec5, 0x56bcae53, 0xc8d83bf0, 0xbfdf0b66, 0x26d65adc, 0x51d16a4a,
@@ -227,7 +227,7 @@ const UINT32 UPlayStationOutputComposer::HashTable[256] = {
 	0x616495a3, 0x1663a535, 0x8f6af48f, 0xf86dc419, 0x660951ba, 0x110e612c, 0x88073096, 0xFF000000
 };
 
-UINT32 UPlayStationOutputComposer::Compute(const unsigned char* Buffer, const size_t Len)
+UINT32 FPlayStationOutputComposer::Compute(const unsigned char* Buffer, const size_t Len)
 {
 	UINT32 Result = CRCSeed;
 	for (size_t i = 0; i < Len; i++)

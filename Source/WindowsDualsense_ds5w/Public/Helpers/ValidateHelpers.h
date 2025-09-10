@@ -6,20 +6,17 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
-#include "ValidateHelpers.generated.h"
 /**
- * @class UValidateHelpers
+ * @class FValidateHelpers
  * @brief A helper class for validating input values against predefined constraints.
  *
- * The UValidateHelpers class provides static methods to validate various input parameters
+ * The FValidateHelpers class provides static methods to validate various input parameters
  * such as force, position, and frequency. These validations ensure that specific values
  * remain within acceptable ranges for DualSense-related operations. All methods return
  * a boolean indicating whether the value is within the valid range.
  */
-UCLASS()
-class WINDOWSDUALSENSE_DS5W_API UValidateHelpers : public UObject
+class WINDOWSDUALSENSE_DS5W_API FValidateHelpers
 {
-	GENERATED_BODY()
 	/**
 	 * Validates whether the given strength value is within the allowable range.
 	 *
