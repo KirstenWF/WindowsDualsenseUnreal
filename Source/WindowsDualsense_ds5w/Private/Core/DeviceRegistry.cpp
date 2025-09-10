@@ -88,8 +88,9 @@ void UDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 				{
 					if (Manager->LibraryInstances.Contains(DeviceId))
 					{
-						IPlatformInputDeviceMapper::Get().Internal_ChangeInputDeviceUserMapping(DeviceId, PLATFORMUSERID_NONE, 0);
-						IPlatformInputDeviceMapper::Get().Internal_SetInputDeviceConnectionState(DeviceId, EInputDeviceConnectionState::Invalid);
+						FPlatformUserId OldUser = IPlatformInputDeviceMapper::Get().GetUserForInputDevice(DeviceId);
+						IPlatformInputDeviceMapper::Get().Internal_ChangeInputDeviceUserMapping(DeviceId, PLATFORMUSERID_NONE, OldUser);
+						IPlatformInputDeviceMapper::Get().Internal_SetInputDeviceConnectionState(DeviceId, EInputDeviceConnectionState::Disconnected);
 
 						Manager->RemoveLibraryInstance(DeviceId.GetId());
 						DisconnectedPaths.Add(Path);
