@@ -18,10 +18,8 @@
 #include "Core/Interfaces/SonyGamepadInterface.h"
 
 TSharedPtr<FDeviceRegistry> FDeviceRegistry::Instance;
-
 bool PrimaryTick = true;
 float AccumulateSecurity = 0;
-
 void FDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 {
 	AccumulateSecurity += DeltaTime;
@@ -29,7 +27,7 @@ void FDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 	{
 		bIsDeviceDetectionInProgress = false;
 	}
-	
+
 	if (!PrimaryTick)
 	{
 		AccumulatorDelta += DeltaTime;
@@ -50,7 +48,6 @@ void FDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 			DetectedDevices.Reset();
 
 			FHIDDeviceInfo::Detect(DetectedDevices);
-
 			AsyncTask(ENamedThreads::GameThread, [WeakManager, DetectedDevices = MoveTemp(DetectedDevices)]() mutable
 			{
 				const TSharedPtr<FDeviceRegistry> Manager = WeakManager.Pin();
@@ -60,7 +57,7 @@ void FDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 				}
 
 				const TUniquePtr<FHIDDeviceInfo> HidManagerObj;
-
+			
 				TSet<FString> CurrentlyConnectedPaths;
 				for (const FDeviceContext& Context : DetectedDevices)
 				{
@@ -76,7 +73,10 @@ void FDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 					{
 						if (Manager->LibraryInstances.Contains(DeviceId))
 						{
+							FPlatformUserId OldUser = IPlatformInputDeviceMapper::Get().GetUserForInputDevice(DeviceId);
+							IPlatformInputDeviceMapper::Get().Internal_ChangeInputDeviceUserMapping(DeviceId, PLATFORMUSERID_NONE, OldUser);
 							IPlatformInputDeviceMapper::Get().Internal_SetInputDeviceConnectionState(DeviceId, EInputDeviceConnectionState::Disconnected);
+
 							Manager->RemoveLibraryInstance(DeviceId.GetId());
 							DisconnectedPaths.Add(Path);
 						}
@@ -87,10 +87,10 @@ void FDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 				{
 					if (Manager->KnownDevicePaths.Contains(Path))
 					{
-						Manager->KnownDevicePaths.Remove(Path);	
+						Manager->KnownDevicePaths.Remove(Path);
 					}
 				}
-				
+
 				for (FDeviceContext& Context : DetectedDevices)
 				{
 					if (!Manager->KnownDevicePaths.Contains(Context.Path))
@@ -102,10 +102,11 @@ void FDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 						{
 							continue;
 						}
-						
+
 						Manager->CreateLibraryInstance(Context);
 					}
 				}
+				
 				Manager->bIsDeviceDetectionInProgress = false;
 			});
 	});
@@ -189,32 +190,26 @@ void FDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
 
 	TArray<FInputDeviceId> Devices;
 	Devices.Reset();
-	IPlatformInputDeviceMapper::Get().GetAllInputDevicesForUser(IPlatformInputDeviceMapper::Get().GetPrimaryPlatformUser(), Devices);
+	
+	IPlatformInputDeviceMapper::Get().GetAllInputDevicesForUser(
+		IPlatformInputDeviceMapper::Get().GetPrimaryPlatformUser(), Devices);
 
 	bool AllocateDeviceToDefaultUser = false;
 	if (Devices.Num() <= 1)
 	{
 		AllocateDeviceToDefaultUser = true;
 	}
-	
+
 	const FName UniqueNamespace = TEXT("DeviceManager.WindowsDualsense");
 	const FHardwareDeviceIdentifier HardwareId(UniqueNamespace, Context.Path);
 	if (HistoryDevices.Contains(Context.Path))
 	{
-		Context.UniqueInputDeviceId = HistoryDevices[Context.Path].Key;
-		Context.UniquePlatformUserId = HistoryDevices[Context.Path].Value;
+		Context.UniqueInputDeviceId = HistoryDevices[Context.Path];
 	}
 	else
 	{
-		const FInputDeviceId NewDeviceId = IPlatformInputDeviceMapper::Get().AllocateNewInputDeviceId();
-		const FPlatformUserId UserId = AllocateDeviceToDefaultUser
-			? IPlatformInputDeviceMapper::Get().GetPrimaryPlatformUser()
-			: FPlatformUserId::CreateFromInternalId(INDEX_NONE);
-		
-		Context.UniqueInputDeviceId = NewDeviceId;
-		Context.UniquePlatformUserId = UserId;
-
-		HistoryDevices.Add(Context.Path, TPair<FInputDeviceId, FPlatformUserId>(NewDeviceId, UserId));
+		Context.UniqueInputDeviceId = IPlatformInputDeviceMapper::Get().AllocateNewInputDeviceId();
+		HistoryDevices.Add(Context.Path, Context.UniqueInputDeviceId);
 	}
 
 	SonyGamepad->_getUObject()->AddToRoot();
@@ -229,16 +224,30 @@ void FDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
 		IPlatformInputDeviceMapper::Get().GetInputDeviceConnectionState(GamepadId) !=
 		EInputDeviceConnectionState::Connected)
 	{
+		FPlatformUserId UserId = IPlatformInputDeviceMapper::Get().GetUserForInputDevice(GamepadId);
+		if (!UserId.IsValid())
+		{
+#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION < 6
+			UserId = AllocateDeviceToDefaultUser
+				? IPlatformInputDeviceMapper::Get().GetPrimaryPlatformUser()
+				: IPlatformInputDeviceMapper::Get().AllocateNewUserId();
+
+#else
+			UserId = IPlatformInputDeviceMapper::Get().GetPlatformUserForNewlyConnectedDevice();
+#endif
+		}
+
 		IPlatformInputDeviceMapper::Get().Internal_MapInputDeviceToUser(Context.UniqueInputDeviceId,
-		                                                                Context.UniquePlatformUserId,
+		                                                                UserId,
 		                                                                EInputDeviceConnectionState::Connected);
 	}
+
 
 	if (ActiveConnectionWatchers.Contains(Context.UniqueInputDeviceId.GetId()))
 	{
 		ActiveConnectionWatchers.Remove(Context.UniqueInputDeviceId.GetId());
 	}
-	
+
 	auto WatcherRunnable = MakeUnique<FHIDPollingRunnable>(
 		MoveTemp(Context.Handle),
 		std::chrono::milliseconds(150)

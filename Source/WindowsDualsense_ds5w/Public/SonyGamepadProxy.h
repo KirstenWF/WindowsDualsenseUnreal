@@ -23,7 +23,6 @@ class WINDOWSDUALSENSE_DS5W_API USonyGamepadProxy : public UObject
 	
 
 public:
-	static FGenericPlatformInputDeviceMapper PlatformInputDeviceMapper;
 	/**
 	 * Checks if the DualSense or DualShock device with the specified Controller ID is connected.
 	 *
@@ -52,16 +51,6 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "SonyGamepad: Dualsense or DualShock Status")
 	static EDeviceConnection GetConnectionType(int32 ControllerId);
-	/**
-	 * Disconnects the DualSense or DualShock device associated with the given Controller ID.
-	 * This method removes the library instance associated with the specified controller.
-	 *
-	 * @param ControllerId The ID of the DualSense or DualShock or DualShock controller to be disconnected.
-	 * @return true if the disconnection was initiated successfully.
-	 */
-	UFUNCTION(BlueprintCallable, Category = "SonyGamepad: Dualsense or DualShock Status")
-	static bool DeviceDisconnect(int32 ControllerId);
-
 	/**
 	 * Retrieves the battery level of the DualSense or DualShock controller for the specified controller ID.
 	 *
@@ -160,6 +149,19 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "SonyGamepad: Dualsense or DualShock Status",
 		meta=(DeprecatedFunction, DeprecationMessage="Use GamepadCoOp Plugin"))
 	static bool DeviceReconnect(int32 ControllerId) { return true; }
+
+	/**
+	 * Disconnects the DualSense or DualShock device associated with the given Controller ID.
+	 * This method removes the library instance associated with the specified controller.
+	 *
+	 * @param ControllerId The ID of the DualSense or DualShock or DualShock controller to be disconnected.
+	 * @return true if the disconnection was initiated successfully.
+	 */
+	UE_DEPRECATED(
+		5.1, "Methods refactored and deprecated as of plugin version v1.2.10")
+	UFUNCTION(BlueprintCallable, Category = "SonyGamepad: Dualsense or DualShock Status",
+		meta=(DeprecatedFunction, DeprecationMessage="SonyGamepad: Dualsense or DualShock Status"))
+	static bool DeviceDisconnect(int32 ControllerId) { return true; };
 
 protected:
 	UFUNCTION()

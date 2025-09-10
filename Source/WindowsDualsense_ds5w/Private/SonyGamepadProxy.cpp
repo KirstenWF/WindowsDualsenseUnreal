@@ -59,24 +59,6 @@ bool USonyGamepadProxy::DeviceIsConnected(int32 ControllerId)
 	return true;
 }
 
-bool USonyGamepadProxy::DeviceDisconnect(int32 ControllerId)
-{
-	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
-	if (!DeviceId.IsValid())
-	{
-		return false;
-	}
-	
-	ISonyGamepadInterface* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId.GetId());
-	if (!Gamepad)
-	{
-		return true;
-	}
-	
-	Gamepad->Disconnect();
-	return true;
-}
-
 float USonyGamepadProxy::LevelBatteryDevice(int32 ControllerId)
 {
 	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
