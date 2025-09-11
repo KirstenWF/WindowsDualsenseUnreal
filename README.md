@@ -39,11 +39,29 @@ The goal is to bridge the gap left by generic controller support on Windows, giv
 * ⚙️ **Force Feedback**: Native integration with Unreal Engine's Force Feedback system for standard motor vibration.
 * 🎮 **Multi-Controller Support**: Manage up to 4 controllers simultaneously.
 
-## 🎬 Demo
+## 🎮 Example Project: Arena Shooter UE 5.6
 
-To see the plugin in action, watch the basic usage video on YouTube.
+To demonstrate the practical use of the **Windows Dualsense Unreal Plugin**, a sample project has been developed using the [*Arena Shooter* template](https://www.unrealengine.com/marketplace/en-US/product/arena-shooter-template) and upgraded to Unreal Engine 5.6. This project integrates key features of the DualSense controller to enhance the player's experience.
 
-[Watch usage video](https://www.youtube.com/watch?v=GrCa5s6acmo)
+![Arena Shooter UE 5.6](Images/ArenaBanner.jpg)
+
+### Implemented Features
+
+In this sample, the following DualSense functionalities were integrated to provide a more immersive gameplay experience:
+
+* 🔫 **Automatic Gun**: Experience fully automatic firing with appropriate haptic feedback, simulating realistic weapon recoil and vibration.
+* 🎯 **Semi-Automatic Gun**: Engage in precise shooting with semi-automatic weapons, where each shot provides distinct haptic sensations and trigger resistance.
+* 💥 **Vibration on Player Hit & Visual Feedback**: Feel the impact! The controller vibrates dynamically when the player takes damage, complemented by on-screen visual feedback for enhanced immersion and immediate awareness.
+* 💡 **LED Color Change on Player Hit**: The DualSense controller's LED light dynamically changes color when the player is hit, offering an immediate and intuitive visual cue of damage taken, enhancing situational awareness.
+
+### Where to Download
+
+You can download the *Parrot Game Sample* with the DualSense integration directly from our GitHub repository.
+
+- [**Download the example project for the editor here**](https://drive.google.com/file/d/1oornHLpanEoHoDPRL1jfF_hvU17phsbp/view?usp=drive_link)
+- [**Download the compiled version of the example project here**](https://drive.google.com/file/d/1H6lvd0Ta-M4Pwtu2w2s4YyTaPobaqKfc/view?usp=drive_link)
+
+> 📝 **Note**: The examples for these features are implemented directly within the Arena Shooter template's `Player Controller` and `Character` Blueprints.
 
 ## 🎮 Example Project: Parrot Game Sample
 
