@@ -146,14 +146,4 @@ public:
 			return false;
 		}
 	}
-
-	/**
-	 * @brief Represents the association of input device IDs with their respective polling results and states.
-	 *
-	 * This map associates each input device identifier with a pair consisting of its polling result status
-	 * and the current state of the polling process. It provides a comprehensive overview of the interaction
-	 * outcomes and states for each device during input polling iterations.
-	 */
-private:
-	static TMap<FInputDeviceId, EPollResult> PollResults;
 };

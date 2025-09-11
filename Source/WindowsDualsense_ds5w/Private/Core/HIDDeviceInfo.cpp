@@ -8,8 +8,6 @@
 #include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
 #include "Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h"
 
-TMap<FInputDeviceId, EPollResult> FHIDDeviceInfo::PollResults;
-
 void FHIDDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 {
 	GUID HidGuid;
@@ -244,8 +242,7 @@ void FHIDDeviceInfo::InvalidateHandle(FDeviceContext* Context)
 		ZeroMemory(Context->BufferDS4, sizeof(Context->BufferDS4));
 		ZeroMemory(Context->BufferOutput, sizeof(Context->BufferOutput));
 
-		PollResults.Remove(Context->UniqueInputDeviceId);
-		UE_LOG(LogTemp, Warning, TEXT("HIDManager: Invalidate Handle."));
+		UE_LOG(LogTemp, Log, TEXT("HIDManager: Invalidate Handle."));
 	}
 }
 
@@ -284,8 +281,8 @@ EPollResult FHIDDeviceInfo::PollTick(HANDLE Handle, BYTE* Buffer, DWORD Length, 
 	if (!ReadFile(Handle, Buffer, Length, &OutBytesRead, nullptr))
 	{
 		const DWORD Error = GetLastError();
-		if (ShouldTreatAsDisconnected(Error)) {
-			InvalidateHandle(Handle);
+		if (ShouldTreatAsDisconnected(Error))
+		{
 			return EPollResult::Disconnected;
 		}
 
