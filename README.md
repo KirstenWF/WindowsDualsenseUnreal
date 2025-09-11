@@ -56,7 +56,7 @@ In this sample, the following DualSense functionalities were integrated to provi
 
 ### Where to Download
 
-You can download the *Parrot Game Sample* with the DualSense integration directly from our GitHub repository.
+You can download the *Arena Shooter UE 5.6* with the DualSense integration directly from link.
 
 - [**Download the example project for the editor here**](https://drive.google.com/file/d/1oornHLpanEoHoDPRL1jfF_hvU17phsbp/view?usp=drive_link)
 - [**Download the compiled version of the example project here**](https://drive.google.com/file/d/1H6lvd0Ta-M4Pwtu2w2s4YyTaPobaqKfc/view?usp=drive_link)
@@ -84,7 +84,7 @@ This project serves as a practical guide for developers who want to see the plug
 
 ### Where to Download
 
-You can download the *Parrot Game Sample* with the DualSense integration directly from our GitHub repository.
+You can download the *Parrot Game Sample* with the DualSense integration directly from link.
 
 - [**Download the example project for the editor here**](https://drive.google.com/file/d/198Dko7ZwIX1vz9jw7RtYp4arY9Qp5bJ4/view?usp=drive_link)
 - [**Download the compiled version of the example project here**](https://drive.google.com/file/d/144hM71xZufBe29UzpTNQ1rRe0AYWC-Ka/view?usp=drive_link)
