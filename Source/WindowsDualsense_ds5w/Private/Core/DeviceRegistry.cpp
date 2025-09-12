@@ -136,19 +136,18 @@ FDeviceRegistry::~FDeviceRegistry()
 	}
 }
 
-ISonyGamepadInterface* FDeviceRegistry::GetLibraryInstance(int32 ControllerId)
+ISonyGamepadInterface* FDeviceRegistry::GetLibraryInstance(const FInputDeviceId& DeviceId)
 {
-	const FInputDeviceId GamepadId = FInputDeviceId::CreateFromInternalId(ControllerId);
-	if (!LibraryInstances.Contains(GamepadId))
+	if (!LibraryInstances.Contains(DeviceId))
 	{
 		return nullptr;
 	}
 
-	if (!LibraryInstances[GamepadId]->IsConnected())
+	if (!LibraryInstances[DeviceId]->IsConnected())
 	{
 		return nullptr;
 	}
-	return LibraryInstances[GamepadId];
+	return LibraryInstances[DeviceId];
 }
 
 void FDeviceRegistry::RemoveLibraryInstance(int32 ControllerId)

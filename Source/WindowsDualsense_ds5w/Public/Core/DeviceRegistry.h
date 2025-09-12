@@ -54,7 +54,7 @@ public:
 	 * @return A pointer to the ISonyGamepadInterface instance corresponding to the specified
 	 *         controller ID, or nullptr if no matching instance exists.
 	 */
-	ISonyGamepadInterface* GetLibraryInstance(int32 ControllerId);
+	ISonyGamepadInterface* GetLibraryInstance(const FInputDeviceId& DeviceId);
 	/**
 	 * Retrieves the map of allocated device library instances. This map associates unique integer
 	 * keys with instances implementing the Sony gamepad interface, allowing access to the currently
