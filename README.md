@@ -4,9 +4,12 @@
 Integrate all the features of Sony's DualSense™ and DualShock 4® controllers into your Unreal Engine project for Windows.
 <br />
 <br />
-<a href="https://github.com/rafaelvaloto/WindowsDualsenseUnreal/issues">Report Bug</a>
+<a target="_blank" href="https://github.com/rafaelvaloto/WindowsDualsenseUnreal/issues">Report Bug</a>
 ·
-<a href="https://github.com/rafaelvaloto/WindowsDualsenseUnreal/issues">Suggest a Feature
+<a target="_blank" href="https://github.com/rafaelvaloto/WindowsDualsenseUnreal/issues">Suggest a Feature
+</a>
+·
+<a target="_blank" href="https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki">Documentation
 </a>
 </p>
 
@@ -56,12 +59,12 @@ In this sample, the following DualSense functionalities were integrated to provi
 
 ### Where to Download
 
-You can download the *Parrot Game Sample* with the DualSense integration directly from our GitHub repository.
+You can download the *Parrot Game Sample* with the DualSense integration directly from link.
 
 - [**Download the example project for the editor here**](https://drive.google.com/file/d/1oornHLpanEoHoDPRL1jfF_hvU17phsbp/view?usp=drive_link)
 - [**Download the compiled version of the example project here**](https://drive.google.com/file/d/1H6lvd0Ta-M4Pwtu2w2s4YyTaPobaqKfc/view?usp=drive_link)
 
-> 📝 **Note**: The examples for these features are implemented directly within the Arena Shooter template's `Player Controller` and `Character` Blueprints.
+> 📝 **Note**: The examples for these features are implemented directly within the Arena Shooter template's `BP_ShooterPlayerController` and `BP_ShooterCharacter` Blueprints.
 
 ## 🎮 Example Project: Parrot Game Sample
 
@@ -84,7 +87,7 @@ This project serves as a practical guide for developers who want to see the plug
 
 ### Where to Download
 
-You can download the *Parrot Game Sample* with the DualSense integration directly from our GitHub repository.
+You can download the *Parrot Game Sample* with the DualSense integration directly from link.
 
 - [**Download the example project for the editor here**](https://drive.google.com/file/d/198Dko7ZwIX1vz9jw7RtYp4arY9Qp5bJ4/view?usp=drive_link)
 - [**Download the compiled version of the example project here**](https://drive.google.com/file/d/144hM71xZufBe29UzpTNQ1rRe0AYWC-Ka/view?usp=drive_link)
@@ -117,36 +120,15 @@ The functions are divided into two main categories for easy access:
 
 * **Sony Gamepad**: Contains management methods common to Sony controllers (DualShock and DualSense), such as LED control, gyroscope, battery level, etc.
 * **DualSense Effects**: Contains methods specific to DualSense exclusive features, such as Adaptive Triggers configuration.
-
-**Example 1: Light Control (Lightbar & LEDs)**
-You can dynamically change the controller's Lightbar color or set the player indicator LEDs.
-
-![Lightbar Control](Images/Lightbar.png)
-
-**Example 2: Trigger Effects (Category: DualSense Effects)**
+  
 Call functions directly to control DualSense features. Some available effects include:
 
 * 🐎 **Galloping**: Simulates a horse's trot.
 * 💪 **Resistance**: Applies constant opposing force when pressing the trigger.
 * 🔫 **Weapon**: Creates a recoil effect for semi-automatic weapons.
-* 🔥 **Automatic Gun**: Vibrates rapidly to simulate an automatic weapon.
+* 🔥 **Automatic Gun**: Vibrates rapidly to simulate an automatic weapon.  
 
-![Galloping Effect](Images/Galloping.png)
-![Resistance Effect](Images/Resistance.png)
-![Weapon Effect](Images/Weapon.png)
-![Automatic Gun Effect](Images/AutomaticGun.png)
-
-### Motor Vibration (Force Feedback)
-
-The motor vibration of both DualSense and DualShock 4 is automatically handled by Unreal Engine's native **Force Feedback** system. This means any force feedback event will trigger the controller's vibration without extra setup.
-
-![Force Feedback](Images/VibrationFF.png)
-
-### Multiplayer Management
-
-To manage multiple controllers in a local scenario, the recommended approach is to use your project's **GameMode**. In the `PostLogin` event, you can assign a controller to each new player that connects.
-
-![Multiplayer Setup in GameMode](Images/Multiplayer.png)
+### 📚 For the full documentation, please see the **[Wiki](https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki)**.
 
 ## 🤝 How to Contribute
 

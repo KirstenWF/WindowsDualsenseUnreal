@@ -7,6 +7,9 @@ Integre todos os recursos do controle DualSense™ e DualShock 4® da Sony no se
 <a href="https://github.com/rafaelvaloto/WindowsDualsenseUnreal/issues">Reportar Bug</a>
 ·
 <a href="https://github.com/rafaelvaloto/WindowsDualsenseUnreal/issues">Sugerir Funcionalidade</a>
+·
+<a target="_blank" href="https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki">Documentação
+</a>
 </p>
 
 <p align="center">
@@ -38,11 +41,29 @@ O objetivo é preencher a lacuna deixada pelo suporte genérico a controles no W
 * ⚙️ **Force Feedback**: Integração nativa com o sistema de Force Feedback da Unreal Engine para a vibração padrão dos motores.
 * 🎮 **Suporte a Múltiplos Controles**: Gerencie até 4 controles conectados simultaneamente.
 
-## 🎬 Demonstração
+## 🎮 Projeto de Exemplo: Arena Shooter UE 5.6
 
-Para ver o plugin em ação, assista ao vídeo de uso básico no YouTube.
+To demonstrate the practical use of the **Windows Dualsense Unreal Plugin**, a sample project has been developed using the [*Arena Shooter* template](https://www.unrealengine.com/marketplace/en-US/product/arena-shooter-template) and upgraded to Unreal Engine 5.6. This project integrates key features of the DualSense controller to enhance the player's experience.
 
-[Veja vídeo de uso](https://www.youtube.com/watch?v=GrCa5s6acmo)
+![Arena Shooter UE 5.6](Images/ArenaBanner.jpg)
+
+### Funcionalidades Implementadas
+
+Neste exemplo, as seguintes funcionalidades do DualSense foram integradas para proporcionar uma experiência de jogo mais imersiva:
+
+* 🔫 **Automatic Gun**: Experimente disparos totalmente automáticos com feedback háptico apropriado, simulando recuo e vibração realistas da arma.
+* 🎯 **Semi-Automatic Gun**: Participe de tiroteios precisos com armas semiautomáticas, onde cada tiro oferece sensações hápticas distintas e resistência nos gatilhos.
+* 💥 **Vibration on Player Hit & Visual Feedback**: Sinta o impacto! O controle vibra dinamicamente quando o jogador sofre dano, complementado por um feedback visual na tela para uma imersão aprimorada e percepção imediata.
+* 💡 **LED Color Change on Player Hit**: A luz de LED do controle DualSense muda de cor dinamicamente quando o jogador é atingido, oferecendo um sinal visual imediato e intuitivo do dano recebido, melhorando a consciência situacional.
+
+### Onde Baixar
+
+Você pode baixar o Parrot Game Sample com a integração do DualSense diretamente pelo link.
+
+- [**Download the example project for the editor here**](https://drive.google.com/file/d/1oornHLpanEoHoDPRL1jfF_hvU17phsbp/view?usp=drive_link)
+- [**Download the compiled version of the example project here**](https://drive.google.com/file/d/1H6lvd0Ta-M4Pwtu2w2s4YyTaPobaqKfc/view?usp=drive_link)
+
+> 📝 **Note**: The examples for these features are implemented directly within the Arena Shooter template's `BP_ShooterPlayerController` and `BP_ShooterCharacter` Blueprints.
 
 ## 🎮 Projeto de Exemplo: Parrot Game Sample
 
@@ -96,12 +117,6 @@ As funções são divididas em duas categorias principais para facilitar o acess
 * **Sony Gamepad**: Contém métodos de gerenciamento comuns a controles Sony (DualShock e DualSense), como controle de LED, giroscópio, nível de bateria, etc.
 * **DualSense Effects**: Contém métodos específicos para os recursos exclusivos do DualSense, como a configuração dos Gatilhos Adaptáveis.
 
-**Exemplo 1: Controle de Luzes (Lightbar e LEDs)**
-Você pode alterar dinamicamente a cor da Lightbar do controle ou definir os LEDs indicadores de jogador.
-
-![Controle da Lightbar](Images/Lightbar.png)
-
-**Exemplo 2: Efeitos de Gatilho (Categoria: DualSense Effects)**
 Chame as funções diretamente para controlar os recursos do DualSense. Alguns dos efeitos disponíveis incluem:
 
 * 🐎 **Galope (Galloping)**: Simula o trote de um cavalo.
@@ -109,20 +124,9 @@ Chame as funções diretamente para controlar os recursos do DualSense. Alguns d
 * 🔫 **Arma (Weapon)**: Cria um efeito de recuo para armas semiautomáticas.
 * 🔥 **Tiro Automático (Automatic Gun)**: Vibra rapidamente para simular uma arma automática.
 
-![Efeito de Galope](Images/Galloping.png)
-![Efeito de Resistência](Images/Resistance.png)
-![Efeito de Arma](Images/Weapon.png)
-![Efeito de Tiro Automático](Images/AutomaticGun.png)
+### 📚 Para a documentação completa, acesse a **[Wiki](https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki)**.
 
 ### Vibração dos Motores (Force Feedback)
-A vibração dos motores do DualSense e do DualShock 4 é gerenciada automaticamente pelo sistema nativo de **Force Feedback** da Unreal Engine. Isso significa que qualquer evento de force feedback acionará a vibração do controle sem necessidade de configuração adicional.
-
-![Force Feedback](Images/VibrationFF.png)
-
-### Gerenciamento de Multiplayer
-Para gerenciar múltiplos controles em um cenário local, a abordagem recomendada é utilizar o **GameMode** do seu projeto. No evento `PostLogin`, você pode associar um controle a cada novo jogador que se conectar.
-
-![Configuração Multiplayer no GameMode](Images/Multiplayer.png)
 
 ## 🤝 Como Contribuir
 
