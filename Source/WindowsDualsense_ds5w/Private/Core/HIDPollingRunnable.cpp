@@ -44,7 +44,7 @@ uint32 FHIDPollingRunnable::Run()
 		DWORD LastError = ERROR_SUCCESS;
 		if (!FHIDDeviceInfo::PingOnce(DeviceHandle, &LastError) && FHIDDeviceInfo::ShouldTreatAsDisconnected(LastError))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Ping failed: device is no longer connected. Shutting down the ping"));
+			UE_LOG(LogTemp, Log, TEXT("Ping failed: device is no longer connected. Shutting down the ping"));
 			return 1;
 		}
 
