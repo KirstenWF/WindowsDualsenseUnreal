@@ -4,12 +4,12 @@
 Integrate all the features of Sony's DualSense™ and DualShock 4® controllers into your Unreal Engine project for Windows.
 <br />
 <br />
-<a target="_blank" href="https://github.com/rafaelvaloto/WindowsDualsenseUnreal/issues">Report Bug</a>
+<a href="https://github.com/rafaelvaloto/WindowsDualsenseUnreal/issues">Report Bug</a>
 ·
-<a target="_blank" href="https://github.com/rafaelvaloto/WindowsDualsenseUnreal/issues">Suggest a Feature
+<a href="https://github.com/rafaelvaloto/WindowsDualsenseUnreal/issues">Suggest a Feature
 </a>
 ·
-<a target="_blank" href="https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki">Documentation
+<a href="https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki">Documentation
 </a>
 </p>
 
