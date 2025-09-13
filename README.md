@@ -64,7 +64,17 @@ You can download the *Arena Shooter UE 5.6* with the DualSense integration direc
 - [**Download the example project for the editor here**](https://drive.google.com/file/d/1oornHLpanEoHoDPRL1jfF_hvU17phsbp/view?usp=drive_link)
 - [**Download the compiled version of the example project here**](https://drive.google.com/file/d/1H6lvd0Ta-M4Pwtu2w2s4YyTaPobaqKfc/view?usp=drive_link)
 
-> 📝 **Note**: The examples for these features are implemented directly within the Arena Shooter template's `BP_ShooterPlayerController` and `BP_ShooterCharacter` Blueprints.
+### 🎓 Hands-On Tutorial
+
+We've created a detailed, step-by-step tutorial that breaks down the entire implementation within the example project. It's the perfect guide to get you started.
+
+➡️ **[[Read the Arena Shooter Tutorial]](https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki/Example-Project%3A-Arena-Shooter-Tutorial)**
+
+### 💡 Implementation Note
+
+To create a clean and scalable system, all core DualSense features are centralized in the **`BPS_ShooterGameInstance`** Blueprint. 
+
+This `GameInstance` acts as a central command hub for all controller effects. The **`BP_ShooterCharacter`** is then used to capture player actions (like swapping weapons or taking damage) and calls the corresponding events in the `GameInstance` to trigger the effects. This approach keeps the code organized and easy to expand.
 
 ## 🎮 Example Project: Parrot Game Sample
 
