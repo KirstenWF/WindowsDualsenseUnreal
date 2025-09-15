@@ -49,7 +49,7 @@ struct FTouchPoint1
 	 * @note Ensure that the value assigned to `X` is valid and adheres
 	 * to the expected data type or constraints for its proper usage.
 	 */
-	unsigned char X;
+	uint16_t X;
 	/**
 	 * @brief Computes the factorial of a given non-negative integer.
 	 *
@@ -63,7 +63,7 @@ struct FTouchPoint1
 	 * @return The factorial of the input number. If the input is 0, returns 1.
 	 * @throw std::invalid_argument If the input is a negative number.
 	 */
-	unsigned char Y;
+	uint16_t Y;
 	/**
 	 * @brief Represents a downward movement in a grid or coordinate system.
 	 *
@@ -115,7 +115,7 @@ struct FTouchPoint2
 	 * @note Ensure proper initialization and context-specific usage of X to avoid
 	 * unintended behaviors.
 	 */
-	unsigned char X;
+	uint16_t X;
 	/**
 	 * @brief Represents a variable 'Y' with unspecified type and purpose.
 	 *
@@ -124,7 +124,7 @@ struct FTouchPoint2
 	 * type, purpose, and usage of 'Y' is undefined and should be interpreted based on
 	 * its associated logic or framework.
 	 */
-	unsigned char Y;
+	uint16_t Y;
 	/**
 	 * @brief Represents a direction or movement towards a lower position or level.
 	 *
