@@ -12,11 +12,6 @@
 #include "Core/PlayStationOutputComposer.h"
 #include "Core/Structs/FOutputContext.h"
 
-void UDualShockLibrary::Disconnect()
-{
-	HIDDeviceContexts.IsConnected = false;
-}
-
 void UDualShockLibrary::Settings(const FSettings<FFeatureReport>& Settings)
 {
 }
@@ -28,7 +23,7 @@ void UDualShockLibrary::Settings(const FDualShockFeatureReport& Settings)
 bool UDualShockLibrary::InitializeLibrary(const FDeviceContext& Context)
 {
 	HIDDeviceContexts = Context;
-	SetLightbar(FColor::Green, 0.0f, 0.0f);
+	SetLightbar(FColor::Blue, 0.0f, 0.0f);
 	return true;
 }
 
@@ -220,19 +215,14 @@ void UDualShockLibrary::SetMicrophoneLed(ELedMicEnum Led)
 {
 }
 
-void UDualShockLibrary::SetTouch(const bool bIsTouch)
+void UDualShockLibrary::EnableTouch(const bool bIsTouch)
 {
-	EnableTouch = bIsTouch;
+	bEnableTouch = bIsTouch;
 }
 
-void UDualShockLibrary::SetAcceleration(bool bIsAccelerometer)
+void UDualShockLibrary::EnableMotionSensor(bool bIsMotionSensor)
 {
-	EnableAccelerometerAndGyroscope = bIsAccelerometer;
-}
-
-void UDualShockLibrary::SetGyroscope(bool bIsGyroscope)
-{
-	EnableAccelerometerAndGyroscope = bIsGyroscope;
+	EnableAccelerometerAndGyroscope = bIsMotionSensor;
 }
 
 void UDualShockLibrary::StopAll()

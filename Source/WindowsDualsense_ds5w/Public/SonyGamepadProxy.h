@@ -78,7 +78,6 @@ public:
 		UPARAM(DisplayName = "(DualShock 4) Toggle transition time min: 0.0f max: 2.5f",  meta = (ClampMin = "0.0", ClampMax = "2.5", UIMin = "0.0", UIMax = "2.5", ToolTip = "(DualShock) Toggle transition time, in seconds."))
 		const float ToogleTime = 0.0f
 	);
-
 	/**
 	 * Controls the LED and microphone visual effects on a DualSense controller.
 	 *
@@ -87,39 +86,39 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "SonyGamepad: Dualsense or DualShock Led Effects")
 	static void LedMicEffects(int32 ControllerId, ELedMicEnum Value);
-
+	/**
+	 * Initiates the calibration process for the motion sensor of the specified controller.
+	 *
+	 * @param ControllerId The ID of the controller whose motion sensor calibration is to be started.
+	 * @param Duration The duration in seconds for the calibration process.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "SonyGamepad|Motion Sensors")
+	static void StartMotionSensorCalibration(int32 ControllerId, float Duration = 2.0f);
+	/**
+	 * Retrieves the calibration status of the motion sensor for the specified controller.
+	 *
+	 * @param ControllerId The ID of the controller whose motion sensor calibration status is being queried.
+	 * @param Progress A reference to a variable where the calibration progress will be stored, expressed as a percentage.
+	 * @return True if the calibration process is in progress, false otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "SonyGamepad|Motion Sensors")
+	static bool GetMotionSensorCalibrationStatus(int32 ControllerId, float& Progress);
 	/**
 	 * Enables or disables the touch functionality on a specified DualSense controller.
 	 *
 	 * @param ControllerId The identifier of the controller for which the touch functionality should be enabled or disabled.
 	 * @param bEnableTouch A boolean indicating whether to enable (true) or disable (false) the touch functionality.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "SonyGamepad: Dualsense or DualShock Touch, Gyroscope and Accelerometer")
+	UFUNCTION(BlueprintCallable, Category = "SonyGamepad: Dualsense or DualShock Touch")
 	static void EnableTouch(int32 ControllerId, bool bEnableTouch);
-
-	/**
-	 * Enables or disables accelerometer values for the specified controller.
-	 *
-	 * This method allows toggling the accelerometer functionality for a given
-	 * controller ID. If the DualSense instance for the specified controller ID
-	 * is not available, the function will return without performing any actions.
-	 *
-	 * @param ControllerId The ID of the controller for which the accelerometer values will be enabled or disabled.
-	 * @param bEnableAccelerometer A boolean value that determines whether to enable or disable accelerometer values.
-	 */
-	UFUNCTION(BlueprintCallable, Category = "SonyGamepad: Dualsense or DualShock Touch, Gyroscope and Accelerometer")
-	static void EnableAccelerometerValues(int32 ControllerId, bool bEnableAccelerometer);
-
 	/**
 	 * Enables or disables the gyroscope functionality for a specified DualSense controller.
 	 *
 	 * @param ControllerId The ID of the controller for which the gyroscope functionality is to be modified.
 	 * @param bEnableGyroscope Set to true to enable the gyroscope, or false to disable it.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "SonyGamepad: Dualsense or DualShock or Touch, Gyroscope and Accelerometer")
+	UFUNCTION(BlueprintCallable, Category = "SonyGamepad|Motion Sensors")
 	static void EnableGyroscopeValues(int32 ControllerId, bool bEnableGyroscope);
-
-
 	/**
 	 * Remaps the specified gamepad ID to a new user and updates the old user's settings accordingly.
 	 *
@@ -162,6 +161,24 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "SonyGamepad: Dualsense or DualShock Status",
 		meta=(DeprecatedFunction, DeprecationMessage="SonyGamepad: Dualsense or DualShock Status"))
 	static bool DeviceDisconnect(int32 ControllerId) { return true; };
+
+	/**
+	 * Enables or disables accelerometer values for the specified controller.
+	 *
+	 * This method allows toggling the accelerometer functionality for a given
+	 * controller ID. If the DualSense instance for the specified controller ID
+	 * is not available, the function will return without performing any actions.
+	 *
+	 * @param ControllerId The ID of the controller for which the accelerometer values will be enabled or disabled.
+	 * @param bEnableAccelerometer A boolean value that determines whether to enable or disable accelerometer values.
+	 */
+	UE_DEPRECATED(
+		5.1, "Methods refactored and deprecated as of plugin version v1.2.14")
+	UFUNCTION(BlueprintCallable, Category = "SonyGamepad: Dualsense or DualShock Touch, Use EnableGyroscopeValues")
+	static void EnableAccelerometerValues(int32 ControllerId, bool bEnableAccelerometer)
+	{
+		EnableGyroscopeValues(ControllerId, bEnableAccelerometer);
+	}
 
 protected:
 	UFUNCTION()

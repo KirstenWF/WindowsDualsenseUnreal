@@ -56,11 +56,6 @@ void UDualSenseLibrary::SendOut()
 	FPlayStationOutputComposer::OutputDualSense(&HIDDeviceContexts);
 }
 
-void UDualSenseLibrary::Disconnect()
-{
-	HIDDeviceContexts.IsConnected = false;
-}
-
 void UDualSenseLibrary::Settings(const FSettings<FFeatureReport>& Settings)
 {
 }
@@ -248,7 +243,7 @@ void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 	                 bLeftTriggerThreshold);
 	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::RightTriggerThreshold,
 	                 bRightTriggerThreshold);
-	if (EnableTouch)
+	if (bEnableTouch)
 	{
 		FTouchPoint1 Touch;
 		const UINT32 Touchpad1Raw = *reinterpret_cast<const UINT32*>(&HIDInput[0x20]);
@@ -310,7 +305,7 @@ void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 		}
 	}
 
-	if (EnableAccelerometerAndGyroscope)
+	if (bEnableAccelerometerAndGyroscope)
 	{
 		FGyro Gyro;
 		Gyro.X = static_cast<int16_t>((HIDInput[16]) | (HIDInput[17] << 8));
@@ -321,6 +316,30 @@ void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 		Acc.X = static_cast<int16_t>((HIDInput[22]) | (HIDInput[23] << 8));
 		Acc.Y = static_cast<int16_t>((HIDInput[24]) | (HIDInput[25] << 8));
 		Acc.Z = static_cast<int16_t>((HIDInput[25]) | (HIDInput[27] << 8));
+
+		if (bIsCalibrating)
+		{
+			AccumulatedGyro.X += Gyro.X;
+			AccumulatedGyro.Y += Gyro.Y;
+			AccumulatedGyro.Z += Gyro.Z;
+
+			AccumulatedAccel.X += Acc.X;
+			AccumulatedAccel.Y += Acc.Y;
+			AccumulatedAccel.Z += Acc.Z;
+
+			CalibrationSampleCount++;
+		}
+
+		if (bHasMotionSensorBaseline)
+		{
+			Gyro.X -= GyroBaseline.X;
+			Gyro.Y -= GyroBaseline.Y;
+			Gyro.Z -= GyroBaseline.Z;
+
+			Acc.X -= AccelBaseline.X;
+			Acc.Y -= AccelBaseline.Y;
+			Acc.Z -= AccelBaseline.Z;
+		}
 
 		constexpr float RealGravityValue = 9.81f;
 		const float GravityMagnitude = FMath::Sqrt(
@@ -333,7 +352,7 @@ void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 		                                static_cast<float>(Acc.Z) / GravityMagnitude) * RealGravityValue;
 		const FVector Gyroscope = FVector(Gyro.X, Gyro.Y, Gyro.Z);
 		const FVector Accelerometer = FVector(Acc.X, Acc.Y, Acc.Z);
-
+		
 		InMessageHandler.Get().OnMotionDetected(Tilts, Gyroscope, Gravity, Accelerometer, UserId, InputDeviceId);
 	}
 
@@ -688,7 +707,6 @@ void UDualSenseLibrary::SetBow(int32 StartPosition, int32 EndPosition, int32 Beg
 	SendOut();
 }
 
-
 void UDualSenseLibrary::StopTrigger(const EControllerHand& Hand)
 {
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
@@ -775,19 +793,67 @@ void UDualSenseLibrary::SetMicrophoneLed(ELedMicEnum Led)
 	}
 }
 
-void UDualSenseLibrary::SetTouch(const bool bIsTouch)
+void UDualSenseLibrary::EnableTouch(const bool bIsTouch)
 {
-	EnableTouch = bIsTouch;
+	bEnableTouch = bIsTouch;
 }
 
-void UDualSenseLibrary::SetGyroscope(bool bIsGyroscope)
+void UDualSenseLibrary::EnableMotionSensor(bool bIsMotionSensor)
 {
-	EnableAccelerometerAndGyroscope = bIsGyroscope;
+	bEnableAccelerometerAndGyroscope = bIsMotionSensor;
 }
 
-void UDualSenseLibrary::SetAcceleration(bool bIsAccelerometer)
+bool UDualSenseLibrary::GetMotionSensorCalibrationStatus(float& OutProgress)
 {
-	EnableAccelerometerAndGyroscope = bIsAccelerometer;
+	if (!bIsCalibrating)
+	{
+		OutProgress = 1.0f;
+		return false; // Não está calibrando
+	}
+
+	const double ElapsedTime = FPlatformTime::Seconds() - CalibrationStartTime;
+	OutProgress = FMath::Clamp(ElapsedTime / CalibrationDuration, 0.0, 1.0);
+
+	if (ElapsedTime >= CalibrationDuration)
+	{
+		// Finaliza a calibração
+		if (CalibrationSampleCount > 0)
+		{
+			// Calcula a média e define como a nova linha de base
+			GyroBaseline.X = AccumulatedGyro.X / CalibrationSampleCount;
+			GyroBaseline.Y = AccumulatedGyro.Y / CalibrationSampleCount;
+			GyroBaseline.Z = AccumulatedGyro.Z / CalibrationSampleCount;
+
+			AccelBaseline.X = AccumulatedAccel.X / CalibrationSampleCount;
+			AccelBaseline.Y = AccumulatedAccel.Y / CalibrationSampleCount;
+			AccelBaseline.Z = AccumulatedAccel.Z / CalibrationSampleCount;
+			
+			bHasMotionSensorBaseline = true;
+			// UE_LOG(LogTemp, Log, TEXT("Calibração concluída. Nova linha de base definida."));
+		}
+		else
+		{
+			// UE_LOG(LogTemp, Warning, TEXT("Calibração concluída, mas nenhuma amostra foi coletada."));
+		}
+
+		bIsCalibrating = false;
+		return false;
+	}
+
+	return true;
+}
+
+void UDualSenseLibrary::StartMotionSensorCalibration(float Duration)
+{
+	bIsCalibrating = true;
+	CalibrationDuration = FMath::Max(1.0f, Duration); // Duração mínima de 1 segundo
+	CalibrationStartTime = FPlatformTime::Seconds();
+	
+	AccumulatedGyro = FVector::ZeroVector;
+	AccumulatedAccel = FVector::ZeroVector;
+	CalibrationSampleCount = 0;
+
+	// UE_LOG(LogTemp, Log, TEXT("Iniciando calibração dos sensores de movimento por %.2f segundos."), CalibrationDuration);
 }
 
 void UDualSenseLibrary::SetHasPhoneConnected(const bool HasConnected)
@@ -799,3 +865,4 @@ void UDualSenseLibrary::SetLevelBattery(const float Level, bool FullyCharged, bo
 {
 	LevelBattery = Level;
 }
+
