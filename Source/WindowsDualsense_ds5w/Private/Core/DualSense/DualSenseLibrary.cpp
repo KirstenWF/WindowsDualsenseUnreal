@@ -351,61 +351,62 @@ void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 
 		if (bHasMotionSensorBaseline)
 		{
-			FGyro CalibrationCompleteGyro;
-			CalibrationCompleteGyro.X = Gyro.X - GyroBaseline.X;
-			CalibrationCompleteGyro.Y = Gyro.Y - GyroBaseline.Y;
-			CalibrationCompleteGyro.Z = Gyro.Z - GyroBaseline.Z;
+			Gyro.X -= GyroBaseline.X;
+			Gyro.Y -= GyroBaseline.Y;
+			Gyro.Z -= GyroBaseline.Z;
 
 			float FinalGyroValueX = 0.0f;
-			if (FMath::Abs(CalibrationCompleteGyro.X) > (Bounds.Gyro_X_Bounds.Y - Bounds.Gyro_X_Bounds.X) *
+			if (FMath::Abs(Gyro.X) > (Bounds.Gyro_X_Bounds.Y - Bounds.Gyro_X_Bounds.X) *
 				SensorsDeadZone)
 			{
-				FinalGyroValueX = CalibrationCompleteGyro.X;
+				FinalGyroValueX = Gyro.X;
 			}
 
 			float FinalGyroValueY = 0.0f;
-			if (FMath::Abs(CalibrationCompleteGyro.Y) > (Bounds.Gyro_Y_Bounds.Y - Bounds.Gyro_Y_Bounds.X) *
+			if (FMath::Abs(Gyro.Y) > (Bounds.Gyro_Y_Bounds.Y - Bounds.Gyro_Y_Bounds.X) *
 				SensorsDeadZone)
 			{
-				FinalGyroValueY = CalibrationCompleteGyro.Y;
+				FinalGyroValueY = Gyro.Y;
 			}
 
 			float FinalGyroValueZ = 0.0f;
-			if (FMath::Abs(CalibrationCompleteGyro.Z) > (Bounds.Gyro_Z_Bounds.Y - Bounds.Gyro_Z_Bounds.X) *
+			if (FMath::Abs(Gyro.Z) > (Bounds.Gyro_Z_Bounds.Y - Bounds.Gyro_Z_Bounds.X) *
 				SensorsDeadZone)
 			{
-				FinalGyroValueZ = CalibrationCompleteGyro.Z;
+				FinalGyroValueZ = Gyro.Z;
+			}
+			
+			Acc.X -= AccelBaseline.X;
+			Acc.Y -= AccelBaseline.Y;
+			Acc.Z -= AccelBaseline.Z;
+			float FinalAccelValueX = 0.0f;
+			if (FMath::Abs(Acc.X) > (Bounds.Accel_X_Bounds.Y - Bounds.Accel_X_Bounds.X) *
+				SensorsDeadZone)
+			{
+				FinalAccelValueX = Acc.X;
 			}
 
+			float FinalAccelValueY = 0.0f;
+			if (FMath::Abs(Acc.Y) > (Bounds.Accel_Y_Bounds.Y - Bounds.Accel_Y_Bounds.X) *
+				SensorsDeadZone)
+			{
+				FinalAccelValueY = Acc.Y;
+			}
+
+			float FinalAccelValueZ = 0.0f;
+			if (FMath::Abs(Acc.Z) > (Bounds.Accel_Z_Bounds.Y - Bounds.Accel_Z_Bounds.X) *
+				SensorsDeadZone)
+			{
+				FinalAccelValueZ = Acc.Z;
+			}
+
+
+			FGyro CalibrationCompleteGyro;
 			CalibrationCompleteGyro.X = FinalGyroValueX;
 			CalibrationCompleteGyro.Y = FinalGyroValueY;
 			CalibrationCompleteGyro.Z = FinalGyroValueZ;
 
 			FAccelerometer CalibrationCompleteAccel;
-			CalibrationCompleteAccel.X = Acc.X - AccelBaseline.X;
-			CalibrationCompleteAccel.Y = Acc.Y - AccelBaseline.Y;
-			CalibrationCompleteAccel.Z = Acc.Z - AccelBaseline.Z;
-			float FinalAccelValueX = 0.0f;
-			if (FMath::Abs(CalibrationCompleteAccel.X) > (Bounds.Accel_X_Bounds.Y - Bounds.Accel_X_Bounds.X) *
-				SensorsDeadZone)
-			{
-				FinalAccelValueX = CalibrationCompleteAccel.X;
-			}
-
-			float FinalAccelValueY = 0.0f;
-			if (FMath::Abs(CalibrationCompleteAccel.Y) > (Bounds.Accel_Y_Bounds.Y - Bounds.Accel_Y_Bounds.X) *
-				SensorsDeadZone)
-			{
-				FinalAccelValueY = CalibrationCompleteAccel.Y;
-			}
-
-			float FinalAccelValueZ = 0.0f;
-			if (FMath::Abs(CalibrationCompleteAccel.Z) > (Bounds.Accel_Z_Bounds.Y - Bounds.Accel_Z_Bounds.X) *
-				SensorsDeadZone)
-			{
-				FinalAccelValueZ = CalibrationCompleteAccel.Z;
-			}
-
 			CalibrationCompleteAccel.X = FinalAccelValueX;
 			CalibrationCompleteAccel.Y = FinalAccelValueY;
 			CalibrationCompleteAccel.Z = FinalAccelValueZ;
