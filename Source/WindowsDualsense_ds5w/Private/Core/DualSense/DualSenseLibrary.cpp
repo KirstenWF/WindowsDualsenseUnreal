@@ -315,7 +315,7 @@ void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 		FAccelerometer Acc;
 		Acc.X = static_cast<int16_t>((HIDInput[22]) | (HIDInput[23] << 8));
 		Acc.Y = static_cast<int16_t>((HIDInput[24]) | (HIDInput[25] << 8));
-		Acc.Z = static_cast<int16_t>((HIDInput[25]) | (HIDInput[27] << 8));
+		Acc.Z = static_cast<int16_t>((HIDInput[26]) | (HIDInput[27] << 8));
 
 		if (bIsCalibrating)
 		{
@@ -327,36 +327,110 @@ void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 			AccumulatedAccel.Y += Acc.Y;
 			AccumulatedAccel.Z += Acc.Z;
 
+
+			Bounds.Gyro_X_Bounds.X = FMath::Min(Bounds.Gyro_X_Bounds.X, Gyro.X);
+			Bounds.Gyro_X_Bounds.Y = FMath::Max(Bounds.Gyro_X_Bounds.Y, Gyro.X);
+
+			Bounds.Gyro_Y_Bounds.X = FMath::Min(Bounds.Gyro_Y_Bounds.X, Gyro.Y);
+			Bounds.Gyro_Y_Bounds.Y = FMath::Max(Bounds.Gyro_Y_Bounds.Y, Gyro.Y);
+
+			Bounds.Gyro_Z_Bounds.X = FMath::Min(Bounds.Gyro_Z_Bounds.X, Gyro.Z);
+			Bounds.Gyro_Z_Bounds.Y = FMath::Max(Bounds.Gyro_Z_Bounds.Y, Gyro.Z);
+
+			Bounds.Accel_X_Bounds.X = FMath::Min(Bounds.Accel_X_Bounds.X, Acc.X);
+			Bounds.Accel_X_Bounds.Y = FMath::Max(Bounds.Accel_X_Bounds.Y, Acc.X);
+
+			Bounds.Accel_Y_Bounds.X = FMath::Min(Bounds.Accel_Y_Bounds.X, Acc.Y);
+			Bounds.Accel_Y_Bounds.Y = FMath::Max(Bounds.Accel_Y_Bounds.Y, Acc.Y);
+
+			Bounds.Accel_Z_Bounds.X = FMath::Min(Bounds.Accel_Z_Bounds.X, Acc.Z);
+			Bounds.Accel_Z_Bounds.Y = FMath::Max(Bounds.Accel_Z_Bounds.Y, Acc.Z);
+
 			CalibrationSampleCount++;
 		}
 
 		if (bHasMotionSensorBaseline)
 		{
-			Gyro.X -= GyroBaseline.X;
-			Gyro.Y -= GyroBaseline.Y;
-			Gyro.Z -= GyroBaseline.Z;
+			FGyro CalibrationCompleteGyro;
+			CalibrationCompleteGyro.X = Gyro.X - GyroBaseline.X;
+			CalibrationCompleteGyro.Y = Gyro.Y - GyroBaseline.Y;
+			CalibrationCompleteGyro.Z = Gyro.Z - GyroBaseline.Z;
 
-			Acc.X -= AccelBaseline.X;
-			Acc.Y -= AccelBaseline.Y;
-			Acc.Z -= AccelBaseline.Z;
+			float FinalGyroValueX = 0.0f;
+			if (FMath::Abs(CalibrationCompleteGyro.X) > (Bounds.Gyro_X_Bounds.Y - Bounds.Gyro_X_Bounds.X) *
+				SensorsDeadZone)
+			{
+				FinalGyroValueX = CalibrationCompleteGyro.X;
+			}
+
+			float FinalGyroValueY = 0.0f;
+			if (FMath::Abs(CalibrationCompleteGyro.Y) > (Bounds.Gyro_Y_Bounds.Y - Bounds.Gyro_Y_Bounds.X) *
+				SensorsDeadZone)
+			{
+				FinalGyroValueY = CalibrationCompleteGyro.Y;
+			}
+
+			float FinalGyroValueZ = 0.0f;
+			if (FMath::Abs(CalibrationCompleteGyro.Z) > (Bounds.Gyro_Z_Bounds.Y - Bounds.Gyro_Z_Bounds.X) *
+				SensorsDeadZone)
+			{
+				FinalGyroValueZ = CalibrationCompleteGyro.Z;
+			}
+
+			CalibrationCompleteGyro.X = FinalGyroValueX;
+			CalibrationCompleteGyro.Y = FinalGyroValueY;
+			CalibrationCompleteGyro.Z = FinalGyroValueZ;
+
+			FAccelerometer CalibrationCompleteAccel;
+			CalibrationCompleteAccel.X = Acc.X - AccelBaseline.X;
+			CalibrationCompleteAccel.Y = Acc.Y - AccelBaseline.Y;
+			CalibrationCompleteAccel.Z = Acc.Z - AccelBaseline.Z;
+			float FinalAccelValueX = 0.0f;
+			if (FMath::Abs(CalibrationCompleteAccel.X) > (Bounds.Accel_X_Bounds.Y - Bounds.Accel_X_Bounds.X) *
+				SensorsDeadZone)
+			{
+				FinalAccelValueX = CalibrationCompleteAccel.X;
+			}
+
+			float FinalAccelValueY = 0.0f;
+			if (FMath::Abs(CalibrationCompleteAccel.Y) > (Bounds.Accel_Y_Bounds.Y - Bounds.Accel_Y_Bounds.X) *
+				SensorsDeadZone)
+			{
+				FinalAccelValueY = CalibrationCompleteAccel.Y;
+			}
+
+			float FinalAccelValueZ = 0.0f;
+			if (FMath::Abs(CalibrationCompleteAccel.Z) > (Bounds.Accel_Z_Bounds.Y - Bounds.Accel_Z_Bounds.X) *
+				SensorsDeadZone)
+			{
+				FinalAccelValueZ = CalibrationCompleteAccel.Z;
+			}
+
+			CalibrationCompleteAccel.X = FinalAccelValueX;
+			CalibrationCompleteAccel.Y = FinalAccelValueY;
+			CalibrationCompleteAccel.Z = FinalAccelValueZ;
+
+			constexpr float RealGravityValue = 9.81f;
+			const float GravityMagnitude = FMath::Sqrt(
+				FMath::Square(static_cast<float>(CalibrationCompleteAccel.X)) +
+				FMath::Square(static_cast<float>(CalibrationCompleteAccel.Y)) + FMath::Square(
+					static_cast<float>(CalibrationCompleteAccel.Z)));
+			const FVector Tilts = FVector(CalibrationCompleteAccel.X + CalibrationCompleteGyro.X,
+			                              CalibrationCompleteAccel.Y + CalibrationCompleteGyro.Y,
+			                              CalibrationCompleteAccel.Z + CalibrationCompleteGyro.Z);
+			const FVector Gravity = FVector(static_cast<float>(CalibrationCompleteAccel.X) / GravityMagnitude,
+			                                static_cast<float>(CalibrationCompleteAccel.Y) / GravityMagnitude,
+			                                static_cast<float>(CalibrationCompleteAccel.Z) / GravityMagnitude) *
+				RealGravityValue;
+			const FVector Gyroscope = FVector(CalibrationCompleteGyro.X, CalibrationCompleteGyro.Y,
+			                                  CalibrationCompleteGyro.Z);
+			const FVector Accelerometer = FVector(CalibrationCompleteAccel.X, CalibrationCompleteAccel.Y,
+			                                      CalibrationCompleteAccel.Z);
+
+			InMessageHandler.Get().OnMotionDetected(Tilts, Gyroscope, Gravity, Accelerometer, UserId, InputDeviceId);
 		}
-
-		constexpr float RealGravityValue = 9.81f;
-		const float GravityMagnitude = FMath::Sqrt(
-			FMath::Square(static_cast<float>(Acc.X)) + FMath::Square(static_cast<float>(Acc.Y)) + FMath::Square(
-				static_cast<float>(Acc.Z)));
-
-		const FVector Tilts = FVector(Acc.X + Gyro.X, Acc.Y + Gyro.Y, Acc.Z + Gyro.Z);
-		const FVector Gravity = FVector(static_cast<float>(Acc.X) / GravityMagnitude,
-		                                static_cast<float>(Acc.Y) / GravityMagnitude,
-		                                static_cast<float>(Acc.Z) / GravityMagnitude) * RealGravityValue;
-		const FVector Gyroscope = FVector(Gyro.X, Gyro.Y, Gyro.Z);
-		const FVector Accelerometer = FVector(Acc.X, Acc.Y, Acc.Z);
-		
-		InMessageHandler.Get().OnMotionDetected(Tilts, Gyroscope, Gravity, Accelerometer, UserId, InputDeviceId);
 	}
 
-	// Actions
 	SetHasPhoneConnected(HIDInput[0x35] & 0x01);
 	SetLevelBattery(((HIDInput[0x34] & 0x0F) * 100) / 8, (HIDInput[0x35] & 0x00), (HIDInput[0x36] & 0x20));
 }
@@ -808,18 +882,16 @@ bool UDualSenseLibrary::GetMotionSensorCalibrationStatus(float& OutProgress)
 	if (!bIsCalibrating)
 	{
 		OutProgress = 1.0f;
-		return false; // Não está calibrando
+		return false;
 	}
 
 	const double ElapsedTime = FPlatformTime::Seconds() - CalibrationStartTime;
 	OutProgress = FMath::Clamp(ElapsedTime / CalibrationDuration, 0.0, 1.0);
 
-	if (ElapsedTime >= CalibrationDuration)
+	if (OutProgress >= 1.0f)
 	{
-		// Finaliza a calibração
 		if (CalibrationSampleCount > 0)
 		{
-			// Calcula a média e define como a nova linha de base
 			GyroBaseline.X = AccumulatedGyro.X / CalibrationSampleCount;
 			GyroBaseline.Y = AccumulatedGyro.Y / CalibrationSampleCount;
 			GyroBaseline.Z = AccumulatedGyro.Z / CalibrationSampleCount;
@@ -827,33 +899,28 @@ bool UDualSenseLibrary::GetMotionSensorCalibrationStatus(float& OutProgress)
 			AccelBaseline.X = AccumulatedAccel.X / CalibrationSampleCount;
 			AccelBaseline.Y = AccumulatedAccel.Y / CalibrationSampleCount;
 			AccelBaseline.Z = AccumulatedAccel.Z / CalibrationSampleCount;
-			
-			bHasMotionSensorBaseline = true;
-			// UE_LOG(LogTemp, Log, TEXT("Calibração concluída. Nova linha de base definida."));
 		}
-		else
-		{
-			// UE_LOG(LogTemp, Warning, TEXT("Calibração concluída, mas nenhuma amostra foi coletada."));
-		}
-
 		bIsCalibrating = false;
+		bHasMotionSensorBaseline = true;
 		return false;
 	}
 
 	return true;
 }
 
-void UDualSenseLibrary::StartMotionSensorCalibration(float Duration)
+void UDualSenseLibrary::StartMotionSensorCalibration(float Duration, float DeadZone)
 {
 	bIsCalibrating = true;
-	CalibrationDuration = FMath::Max(1.0f, Duration); // Duração mínima de 1 segundo
-	CalibrationStartTime = FPlatformTime::Seconds();
-	
-	AccumulatedGyro = FVector::ZeroVector;
-	AccumulatedAccel = FVector::ZeroVector;
 	CalibrationSampleCount = 0;
 
-	// UE_LOG(LogTemp, Log, TEXT("Iniciando calibração dos sensores de movimento por %.2f segundos."), CalibrationDuration);
+	GyroBaseline = FVector::ZeroVector;
+	AccelBaseline = FVector::ZeroVector;
+	AccumulatedGyro = FVector::ZeroVector;
+	AccumulatedAccel = FVector::ZeroVector;
+
+	SensorsDeadZone = FMath::Clamp(DeadZone, 0.0f, 1.f);
+	CalibrationDuration = FMath::Clamp(Duration, 1.0f, 10.0f);
+	CalibrationStartTime = FPlatformTime::Seconds();
 }
 
 void UDualSenseLibrary::SetHasPhoneConnected(const bool HasConnected)
@@ -865,4 +932,3 @@ void UDualSenseLibrary::SetLevelBattery(const float Level, bool FullyCharged, bo
 {
 	LevelBattery = Level;
 }
-

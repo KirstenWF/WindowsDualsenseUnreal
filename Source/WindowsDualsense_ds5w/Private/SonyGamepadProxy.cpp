@@ -111,7 +111,7 @@ void USonyGamepadProxy::LedMicEffects(int32 ControllerId, ELedMicEnum Value)
 	Gamepad->SetMicrophoneLed(Value);
 }
 
-void USonyGamepadProxy::StartMotionSensorCalibration(int32 ControllerId, float Duration)
+void USonyGamepadProxy::StartMotionSensorCalibration(int32 ControllerId, float Duration, float DeadZone)
 {
 	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
 	if (!DeviceId.IsValid())
@@ -124,7 +124,7 @@ void USonyGamepadProxy::StartMotionSensorCalibration(int32 ControllerId, float D
 	{
 		return;
 	}
-	Gamepad->StartMotionSensorCalibration(Duration);
+	Gamepad->StartMotionSensorCalibration(Duration, DeadZone);
 }
 
 bool USonyGamepadProxy::GetMotionSensorCalibrationStatus(int32 ControllerId, float& Progress)
@@ -143,7 +143,6 @@ bool USonyGamepadProxy::GetMotionSensorCalibrationStatus(int32 ControllerId, flo
 
 	if (UDualSenseLibrary* DsLibrary  = Cast<UDualSenseLibrary>(Gamepad))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Cast DS Library true"));
 		DsLibrary->GetMotionSensorCalibrationStatus(Progress);
 		if (Progress >= 1.0f)
 		{
@@ -151,7 +150,6 @@ bool USonyGamepadProxy::GetMotionSensorCalibrationStatus(int32 ControllerId, flo
 		}
 		return true;
 	}
-	UE_LOG(LogTemp, Error, TEXT("Cast DS Library false"));
 	return false;
 }
 
@@ -185,6 +183,8 @@ void USonyGamepadProxy::EnableGyroscopeValues(int32 ControllerId, bool bEnableGy
 	{
 		return;
 	}
+
+	
 
 	Gamepad->EnableMotionSensor(bEnableGyroscope);
 }

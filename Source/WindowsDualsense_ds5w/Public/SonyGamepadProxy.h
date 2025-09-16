@@ -87,13 +87,23 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "SonyGamepad: Dualsense or DualShock Led Effects")
 	static void LedMicEffects(int32 ControllerId, ELedMicEnum Value);
 	/**
-	 * Initiates the calibration process for the motion sensor of the specified controller.
+	 * Initiates the motion sensor calibration process for the specified controller.
+	 * The calibration adjusts the motion sensor sensitivity and dead zone settings.
 	 *
-	 * @param ControllerId The ID of the controller whose motion sensor calibration is to be started.
-	 * @param Duration The duration in seconds for the calibration process.
+	 * @param ControllerId The ID of the controller to be calibrated.
+	 * @param Duration The duration of the calibration process in seconds.
+	 * @param DeadZone The sensitivity threshold below which motion input will be ignored.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "SonyGamepad|Motion Sensors")
-	static void StartMotionSensorCalibration(int32 ControllerId, float Duration = 2.0f);
+	static void StartMotionSensorCalibration(
+		int32 ControllerId,
+		UPARAM(DisplayName = "Calibration Duration (Seconds)", meta = (ClampMin = "1.0", ClampMax = "10.0", UIMin = "1.0", UIMax = "10.0", 
+			ToolTip = "The time in seconds to collect sensor data for calculating the stable center (baseline). Longer durations can provide a more accurate baseline."))
+			float Duration = 2.0f,
+			UPARAM(DisplayName = "Noise Deadzone Percentage", meta = (ClampMin = "0.0", ClampMax = "1.0", UIMin = "0.0", UIMax = "1.0", 
+				ToolTip = "A percentage (0.0 to 1.0) of the sensor noise range to ignore after calibration. A higher value creates a larger deadzone, filtering out more residual noise but potentially ignoring very subtle movements."))
+				float DeadZone = 0.5f
+			);
 	/**
 	 * Retrieves the calibration status of the motion sensor for the specified controller.
 	 *

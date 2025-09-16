@@ -244,6 +244,40 @@ struct FGyro
 	int16_t Z;
 };
 
+USTRUCT()
+struct FSensorBounds
+{
+	GENERATED_BODY()
+	
+	UPROPERTY()
+	FVector2D Gyro_X_Bounds; // X = Min, Y = Max
+	
+	UPROPERTY()
+	FVector2D Gyro_Y_Bounds; // X = Min, Y = Max
+	
+	UPROPERTY()
+	FVector2D Gyro_Z_Bounds; // X = Min, Y = Max
+	
+	UPROPERTY()
+	FVector2D Accel_X_Bounds; // X = Min, Y = Max
+	
+	UPROPERTY()
+	FVector2D Accel_Y_Bounds; // X = Min, Y = Max
+	
+	UPROPERTY()
+	FVector2D Accel_Z_Bounds; // X = Min, Y = Max
+
+	FSensorBounds()
+	{
+		Gyro_X_Bounds = FVector2D(FLT_MAX, -FLT_MAX);
+		Gyro_Y_Bounds = FVector2D(FLT_MAX, -FLT_MAX);
+		Gyro_Z_Bounds = FVector2D(FLT_MAX, -FLT_MAX);
+		Accel_X_Bounds = FVector2D(FLT_MAX, -FLT_MAX);
+		Accel_Y_Bounds = FVector2D(FLT_MAX, -FLT_MAX);
+		Accel_Z_Bounds = FVector2D(FLT_MAX, -FLT_MAX);
+	}
+};
+
 /**
  * @class UDualSenseLibrary
  * @brief Utility class for interfacing with the PlayStation DualSense controller.
@@ -667,11 +701,21 @@ public:
 	 */
 	virtual void EnableMotionSensor(bool bIsMotionSensor) override;
 	/**
-	 * Starts the calibration process for the motion sensor of the gamepad.
+	 * @brief Initiates the calibration process for the DualSense motion sensors.
 	 *
-	 * @param Duration The duration for which the calibration should run, in seconds.
+	 * This method starts the calibration routine for the motion sensors in a DualSense controller.
+	 * It collects raw sensor data over the specified duration to determine baseline values and applies
+	 * a dead zone to reduce noise or unintentional drift in sensor readings.
+	 *
+	 * The calibration process allows for improved precision in motion-related computations
+	 * by compensating for sensor drift and other inaccuracies.
+	 *
+	 * @param Duration The duration, in seconds, to collect sensor data for calibration.
+	 *                 Values are clamped between 1.0 and 10.0 seconds.
+	 * @param DeadZone The threshold for sensor dead zone to filter out small motion or drift.
+	 *                 Valid range is from 0.0 to 1.0.
 	 */
-	virtual void StartMotionSensorCalibration(float Duration) override;
+	virtual void StartMotionSensorCalibration(float Duration, float DeadZone) override;
 	/**
 	 * Retrieves the current calibration status of the motion sensors.
 	 *
@@ -774,6 +818,21 @@ private:
 	 * or hardware being used.
 	 */
 	float RightTriggerFeedback;
+	/**
+	 * @variable SensorsDeadZone
+	 * @brief Defines the threshold for ignoring small sensor input variations.
+	 *
+	 * SensorsDeadZone is used to eliminate unintended small variations or noise
+	 * in sensor readings by setting a minimum threshold value. Any input changes
+	 * below this value are considered insignificant and are ignored in further
+	 * processing.
+	 *
+	 * @details This variable is particularly useful for fine-tuning input systems
+	 * to ensure smoother and more reliable sensor-based interactions by reducing
+	 * the sensitivity to unintentional micro-adjustments. It is often applied in
+	 * joystick or motion sensor implementations.
+	 */
+	float SensorsDeadZone = 0.3f;
 	/**
 	 * @variable EnableAccelerometerAndGyroscope
 	 * @brief Flags the activation of accelerometer and gyroscope sensors in the system.
@@ -934,4 +993,6 @@ private:
 	 * accelerometer measurements.
 	 */
 	FVector AccelBaseline;
+
+	FSensorBounds Bounds;
 };

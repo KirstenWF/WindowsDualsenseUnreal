@@ -136,11 +136,12 @@ public:
 	 */
 	virtual void EnableMotionSensor(bool bIsMotionSensor) = 0;
 	/**
-	 * Starts the calibration process for the motion sensor of the gamepad.
+	 * Initiates the calibration process for the motion sensor on the gamepad.
 	 *
-	 * @param Duration The duration for which the calibration should run, in seconds.
+	 * @param Duration The duration, in seconds, for which the calibration process should run.
+	 * @param DeadZone The threshold value to be used for filtering out small movements.
 	 */
-	virtual void StartMotionSensorCalibration(float Duration) = 0;
+	virtual void StartMotionSensorCalibration(float Duration, float DeadZone) = 0;
 	/**
 	 * Retrieves the current calibration status of the motion sensors.
 	 *
