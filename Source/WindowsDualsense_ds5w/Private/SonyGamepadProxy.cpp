@@ -134,6 +134,7 @@ bool USonyGamepadProxy::GetMotionSensorCalibrationStatus(int32 ControllerId, flo
 	{
 		return false;
 	}
+	
 	ISonyGamepadInterface* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
 	if (!Gamepad)
 	{
@@ -143,13 +144,9 @@ bool USonyGamepadProxy::GetMotionSensorCalibrationStatus(int32 ControllerId, flo
 
 	if (UDualSenseLibrary* DsLibrary  = Cast<UDualSenseLibrary>(Gamepad))
 	{
-		DsLibrary->GetMotionSensorCalibrationStatus(Progress);
-		if (Progress >= 1.0f)
-		{
-			return false;
-		}
-		return true;
+		return DsLibrary->GetMotionSensorCalibrationStatus(Progress);
 	}
+	
 	return false;
 }
 

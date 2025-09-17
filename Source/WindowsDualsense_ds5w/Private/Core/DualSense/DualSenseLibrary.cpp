@@ -354,41 +354,37 @@ void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 			Gyro.X -= GyroBaseline.X;
 			Gyro.Y -= GyroBaseline.Y;
 			Gyro.Z -= GyroBaseline.Z;
-
+			
 			float FinalGyroValueX = 0.0f;
-			if (FMath::Abs(Gyro.X) > (Bounds.Gyro_X_Bounds.Y - Bounds.Gyro_X_Bounds.X) *
-				SensorsDeadZone)
+			if (FMath::Abs(Gyro.X) > (Bounds.Gyro_X_Bounds.Y - Bounds.Gyro_X_Bounds.X) * SensorsDeadZone)
 			{
 				FinalGyroValueX = Gyro.X;
 			}
 
 			float FinalGyroValueY = 0.0f;
-			if (FMath::Abs(Gyro.Y) > (Bounds.Gyro_Y_Bounds.Y - Bounds.Gyro_Y_Bounds.X) *
-				SensorsDeadZone)
+			if (FMath::Abs(Gyro.Y) > (Bounds.Gyro_Y_Bounds.Y - Bounds.Gyro_Y_Bounds.X) * SensorsDeadZone)
 			{
 				FinalGyroValueY = Gyro.Y;
 			}
 
 			float FinalGyroValueZ = 0.0f;
-			if (FMath::Abs(Gyro.Z) > (Bounds.Gyro_Z_Bounds.Y - Bounds.Gyro_Z_Bounds.X) *
-				SensorsDeadZone)
+			if (FMath::Abs(Gyro.Z) > (Bounds.Gyro_Z_Bounds.Y - Bounds.Gyro_Z_Bounds.X) * SensorsDeadZone)
 			{
 				FinalGyroValueZ = Gyro.Z;
 			}
-			
+
 			Acc.X -= AccelBaseline.X;
 			Acc.Y -= AccelBaseline.Y;
 			Acc.Z -= AccelBaseline.Z;
+
 			float FinalAccelValueX = 0.0f;
-			if (FMath::Abs(Acc.X) > (Bounds.Accel_X_Bounds.Y - Bounds.Accel_X_Bounds.X) *
-				SensorsDeadZone)
+			if (FMath::Abs(Acc.X) > (Bounds.Accel_X_Bounds.Y - Bounds.Accel_X_Bounds.X) * SensorsDeadZone)
 			{
 				FinalAccelValueX = Acc.X;
 			}
 
 			float FinalAccelValueY = 0.0f;
-			if (FMath::Abs(Acc.Y) > (Bounds.Accel_Y_Bounds.Y - Bounds.Accel_Y_Bounds.X) *
-				SensorsDeadZone)
+			if (FMath::Abs(Acc.Y) > (Bounds.Accel_Y_Bounds.Y - Bounds.Accel_Y_Bounds.X) * SensorsDeadZone)
 			{
 				FinalAccelValueY = Acc.Y;
 			}
@@ -400,34 +396,23 @@ void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 				FinalAccelValueZ = Acc.Z;
 			}
 
+			Gyro.X = FinalGyroValueX;
+			Gyro.Y = FinalGyroValueY;
+			Gyro.Z = FinalGyroValueZ;
 
-			FGyro CalibrationCompleteGyro;
-			CalibrationCompleteGyro.X = FinalGyroValueX;
-			CalibrationCompleteGyro.Y = FinalGyroValueY;
-			CalibrationCompleteGyro.Z = FinalGyroValueZ;
+			Acc.X = FinalAccelValueX;
+			Acc.Y = FinalAccelValueY;
+			Acc.Z = FinalAccelValueZ;
 
-			FAccelerometer CalibrationCompleteAccel;
-			CalibrationCompleteAccel.X = FinalAccelValueX;
-			CalibrationCompleteAccel.Y = FinalAccelValueY;
-			CalibrationCompleteAccel.Z = FinalAccelValueZ;
-
-			constexpr float RealGravityValue = 9.81f;
 			const float GravityMagnitude = FMath::Sqrt(
-				FMath::Square(static_cast<float>(CalibrationCompleteAccel.X)) +
-				FMath::Square(static_cast<float>(CalibrationCompleteAccel.Y)) + FMath::Square(
-					static_cast<float>(CalibrationCompleteAccel.Z)));
-			const FVector Tilts = FVector(CalibrationCompleteAccel.X + CalibrationCompleteGyro.X,
-			                              CalibrationCompleteAccel.Y + CalibrationCompleteGyro.Y,
-			                              CalibrationCompleteAccel.Z + CalibrationCompleteGyro.Z);
-			const FVector Gravity = FVector(static_cast<float>(CalibrationCompleteAccel.X) / GravityMagnitude,
-			                                static_cast<float>(CalibrationCompleteAccel.Y) / GravityMagnitude,
-			                                static_cast<float>(CalibrationCompleteAccel.Z) / GravityMagnitude) *
-				RealGravityValue;
-			const FVector Gyroscope = FVector(CalibrationCompleteGyro.X, CalibrationCompleteGyro.Y,
-			                                  CalibrationCompleteGyro.Z);
-			const FVector Accelerometer = FVector(CalibrationCompleteAccel.X, CalibrationCompleteAccel.Y,
-			                                      CalibrationCompleteAccel.Z);
+				FMath::Square(Acc.X + FMath::Square(Acc.Y)) + FMath::Square(static_cast<float>(Acc.Z))
+			);
 
+			const FVector Tilts = FVector(Acc.X + Gyro.X, Acc.Y + Gyro.Y, Acc.Z + Gyro.Z);
+			const FVector Gravity = (FVector(Acc.X, Acc.Y, Acc.Z) / GravityMagnitude) * 9.81f;
+
+			const FVector Gyroscope = FVector(Gyro.X, Gyro.Y, Gyro.Z);
+			const FVector Accelerometer = FVector(Acc.X, Acc.Y, Acc.Z);
 			InMessageHandler.Get().OnMotionDetected(Tilts, Gyroscope, Gravity, Accelerometer, UserId, InputDeviceId);
 		}
 	}
@@ -889,7 +874,7 @@ bool UDualSenseLibrary::GetMotionSensorCalibrationStatus(float& OutProgress)
 	const double ElapsedTime = FPlatformTime::Seconds() - CalibrationStartTime;
 	OutProgress = FMath::Clamp(ElapsedTime / CalibrationDuration, 0.0, 1.0);
 
-	if (OutProgress >= 1.0f)
+	if (ElapsedTime >= CalibrationDuration)
 	{
 		if (CalibrationSampleCount > 0)
 		{
