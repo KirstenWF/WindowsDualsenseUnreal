@@ -39,17 +39,7 @@ class WINDOWSDUALSENSE_DS5W_API ISonyGamepadInterface
 {
 	GENERATED_BODY()
 
-
-	/**
-	 * Retrieves an instance of the Sony gamepad interface.
-	 *
-	 * @return A pointer to the ISonyGamepadInterface instance.
-	 */
 public:
-	/**
-	 * Disconnects the gamepad from the system.
-	 */
-	virtual void Disconnect() = 0;
 	/**
 	 * Pure virtual function that checks the connection status of the gamepad.
 	 *
@@ -57,45 +47,11 @@ public:
 	 */
 	virtual bool IsConnected() = 0;
 	/**
-	 * Retrieves the platform user identifier associated with the current gamepad.
-	 *
-	 * @return The unique platform user ID for the gamepad.
-	 */
-	virtual FPlatformUserId GetUserId() = 0;
-	/**
-	 * Retrieves the unique identifier for the input device.
-	 *
-	 * @return The unique identifier associated with the input device.
-	 */
-	virtual FInputDeviceId GetDeviceId() = 0;
-	/**
-	 * Sets the user ID associated with the platform user.
-	 *
-	 * @param User The platform user ID to associate.
-	 */
-	virtual void SetUserId(FPlatformUserId User) = 0;
-	/**
-	 * Sets the device ID for the input device.
-	 *
-	 * @param DeviceId The identifier for the input device to be set.
-	 */
-	virtual void SetDeviceId(FInputDeviceId DeviceId) = 0;
-	/**
 	 * Sets the identifier for the controller to associate it with a specific device or context.
 	 *
 	 * @param ControllerId An integer representing the unique identifier for the controller.
 	 */
 	virtual void SetControllerId(int32 ControllerId) = 0;
-	/**
-	 * Pure virtual function that must be implemented by derived classes.
-	 * Used to attempt reconnection with the associated Sony gamepad device.
-	 * Typically, the implementation should ensure the gamepad is reconnected
-	 * and restored to its operational state.
-	 *
-	 * This function is expected to be executed when the connection to the gamepad
-	 * has been lost or is in a disconnected state.
-	 */
-	virtual FString GetDevicePath() = 0;
 	/**
 	 * Retrieves the type of the device.
 	 *
@@ -172,18 +128,28 @@ public:
 	 *
 	 * @param bIsTouch A boolean indicating whether touch input is enabled (true) or disabled (false).
 	 */
-	virtual void SetTouch(const bool bIsTouch) = 0;
+	virtual void EnableTouch(const bool bIsTouch) = 0;
 	/**
-	 * Sets the acceleration mode for the gamepad.
+	 * Enables the motion sensor functionality of the gamepad.
 	 *
-	 * @param bIsAccelerometer If true, enables accelerometer-based input; otherwise, disables it.
+	 * @param bIsMotionSensor Specifies whether to enable the gyroscope (true) or accelerometer (false) as the motion sensor.
 	 */
-	virtual void SetAcceleration(bool bIsAccelerometer) = 0;
+	virtual void EnableMotionSensor(bool bIsMotionSensor) = 0;
 	/**
-	 * Enables or disables the gyroscope functionality in the gamepad.
-	 * @param bIsGyroscope Indicates whether the gyroscope should be enabled (true) or disabled (false).
+	 * Initiates the calibration process for the motion sensor on the gamepad.
+	 *
+	 * @param Duration The duration, in seconds, for which the calibration process should run.
+	 * @param DeadZone The threshold value to be used for filtering out small movements.
 	 */
-	virtual void SetGyroscope(bool bIsGyroscope) = 0;
+	virtual void StartMotionSensorCalibration(float Duration, float DeadZone) = 0;
+	/**
+	 * Retrieves the current calibration status of the motion sensors.
+	 *
+	 * @param OutProgress A reference to a float where the current calibration progress will be stored.
+	 *                    The value ranges from 0.0 (no progress) to 1.0 (fully calibrated).
+	 * @return True if the calibration status was successfully retrieved, false otherwise.
+	 */
+	virtual bool GetMotionSensorCalibrationStatus(float& OutProgress) = 0;
 	/**
 	 * Stops all currently active operations or actions associated with the interface.
 	 * This method must be implemented by any derived class to handle the termination

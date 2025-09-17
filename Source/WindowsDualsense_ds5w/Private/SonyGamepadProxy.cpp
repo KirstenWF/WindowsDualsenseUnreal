@@ -6,6 +6,7 @@
 #include "SonyGamepadProxy.h"
 #include "Misc/CoreDelegates.h"
 #include "Core/DeviceRegistry.h"
+#include "Core/DualSense/DualSenseLibrary.h"
 #include "Core/Interfaces/SonyGamepadInterface.h"
 
 EDeviceType USonyGamepadProxy::GetDeviceType(int32 ControllerId)
@@ -110,6 +111,45 @@ void USonyGamepadProxy::LedMicEffects(int32 ControllerId, ELedMicEnum Value)
 	Gamepad->SetMicrophoneLed(Value);
 }
 
+void USonyGamepadProxy::StartMotionSensorCalibration(int32 ControllerId, float Duration, float DeadZone)
+{
+	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
+	if (!DeviceId.IsValid())
+	{
+		return;
+	}
+	
+	ISonyGamepadInterface* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
+	if (!Gamepad)
+	{
+		return;
+	}
+	Gamepad->StartMotionSensorCalibration(Duration, DeadZone);
+}
+
+bool USonyGamepadProxy::GetMotionSensorCalibrationStatus(int32 ControllerId, float& Progress)
+{
+	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
+	if (!DeviceId.IsValid())
+	{
+		return false;
+	}
+	
+	ISonyGamepadInterface* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
+	if (!Gamepad)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Gamepad not found"));
+		return false;
+	}
+
+	if (UDualSenseLibrary* DsLibrary  = Cast<UDualSenseLibrary>(Gamepad))
+	{
+		return DsLibrary->GetMotionSensorCalibrationStatus(Progress);
+	}
+	
+	return false;
+}
+
 void USonyGamepadProxy::EnableTouch(int32 ControllerId, bool bEnableTouch)
 {
 	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
@@ -124,24 +164,7 @@ void USonyGamepadProxy::EnableTouch(int32 ControllerId, bool bEnableTouch)
 		return;
 	}
 
-	Gamepad->SetTouch(bEnableTouch);
-}
-
-void USonyGamepadProxy::EnableAccelerometerValues(int32 ControllerId, bool bEnableAccelerometer)
-{
-	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
-	if (!DeviceId.IsValid())
-	{
-		return;
-	}
-	
-	ISonyGamepadInterface* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
-	if (!Gamepad)
-	{
-		return;
-	}
-
-	Gamepad->SetAcceleration(bEnableAccelerometer);
+	Gamepad->EnableTouch(bEnableTouch);
 }
 
 void USonyGamepadProxy::EnableGyroscopeValues(int32 ControllerId, bool bEnableGyroscope)
@@ -158,7 +181,9 @@ void USonyGamepadProxy::EnableGyroscopeValues(int32 ControllerId, bool bEnableGy
 		return;
 	}
 
-	Gamepad->SetGyroscope(bEnableGyroscope);
+	
+
+	Gamepad->EnableMotionSensor(bEnableGyroscope);
 }
 
 FInputDeviceId USonyGamepadProxy::GetGamepadInterface(int32 ControllerId)

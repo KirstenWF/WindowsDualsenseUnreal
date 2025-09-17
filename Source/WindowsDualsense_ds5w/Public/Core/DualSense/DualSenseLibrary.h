@@ -49,7 +49,7 @@ struct FTouchPoint1
 	 * @note Ensure that the value assigned to `X` is valid and adheres
 	 * to the expected data type or constraints for its proper usage.
 	 */
-	unsigned char X;
+	uint16_t X;
 	/**
 	 * @brief Computes the factorial of a given non-negative integer.
 	 *
@@ -63,7 +63,7 @@ struct FTouchPoint1
 	 * @return The factorial of the input number. If the input is 0, returns 1.
 	 * @throw std::invalid_argument If the input is a negative number.
 	 */
-	unsigned char Y;
+	uint16_t Y;
 	/**
 	 * @brief Represents a downward movement in a grid or coordinate system.
 	 *
@@ -115,7 +115,7 @@ struct FTouchPoint2
 	 * @note Ensure proper initialization and context-specific usage of X to avoid
 	 * unintended behaviors.
 	 */
-	unsigned char X;
+	uint16_t X;
 	/**
 	 * @brief Represents a variable 'Y' with unspecified type and purpose.
 	 *
@@ -124,7 +124,7 @@ struct FTouchPoint2
 	 * type, purpose, and usage of 'Y' is undefined and should be interpreted based on
 	 * its associated logic or framework.
 	 */
-	unsigned char Y;
+	uint16_t Y;
 	/**
 	 * @brief Represents a direction or movement towards a lower position or level.
 	 *
@@ -164,7 +164,7 @@ struct FAccelerometer
 	/**
 	 *
 	 */
-	unsigned char X;
+	int16_t X;
 	/**
 	 * @brief Represents the variable Y used within the application.
 	 *
@@ -181,7 +181,7 @@ struct FAccelerometer
 	 * Ensure that the value of Y is properly documented and updated
 	 * throughout the codebase to avoid confusion or misuse.
 	 */
-	unsigned char Y;
+	int16_t Y;
 	/**
 	 * @brief Represents a variable named Z.
 	 *
@@ -193,7 +193,7 @@ struct FAccelerometer
 	 * Ensure that the value assigned to Z adheres to the appropriate constraints
 	 * or expectations in the application to maintain correctness and stability.
 	 */
-	unsigned char Z;
+	int16_t Z;
 };
 
 /**
@@ -217,7 +217,7 @@ struct FGyro
 	 * @note Ensure to initialize and manage the value of this variable correctly to avoid
 	 * unexpected behavior or runtime errors.
 	 */
-	unsigned char X;
+	int16_t X;
 	/**
 	 * @brief Represents a generic variable or entity identified as 'Y'.
 	 *
@@ -230,7 +230,7 @@ struct FGyro
 	 *       unexpected behavior. Misuse of 'Y' may lead to runtime errors or
 	 *       logical inconsistencies.
 	 */
-	unsigned char Y;
+	int16_t Y;
 	/**
 	 * @brief Represents a variable or entity denoted as Z.
 	 *
@@ -241,7 +241,41 @@ struct FGyro
 	 * @note The specific use case and type of Z must be determined by its context
 	 *       within the scope of the application or module.
 	 */
-	unsigned char Z;
+	int16_t Z;
+};
+
+USTRUCT()
+struct FSensorBounds
+{
+	GENERATED_BODY()
+	
+	UPROPERTY()
+	FVector2D Gyro_X_Bounds; // X = Min, Y = Max
+	
+	UPROPERTY()
+	FVector2D Gyro_Y_Bounds; // X = Min, Y = Max
+	
+	UPROPERTY()
+	FVector2D Gyro_Z_Bounds; // X = Min, Y = Max
+	
+	UPROPERTY()
+	FVector2D Accel_X_Bounds; // X = Min, Y = Max
+	
+	UPROPERTY()
+	FVector2D Accel_Y_Bounds; // X = Min, Y = Max
+	
+	UPROPERTY()
+	FVector2D Accel_Z_Bounds; // X = Min, Y = Max
+
+	FSensorBounds()
+	{
+		Gyro_X_Bounds = FVector2D(FLT_MAX, -FLT_MAX);
+		Gyro_Y_Bounds = FVector2D(FLT_MAX, -FLT_MAX);
+		Gyro_Z_Bounds = FVector2D(FLT_MAX, -FLT_MAX);
+		Accel_X_Bounds = FVector2D(FLT_MAX, -FLT_MAX);
+		Accel_Y_Bounds = FVector2D(FLT_MAX, -FLT_MAX);
+		Accel_Z_Bounds = FVector2D(FLT_MAX, -FLT_MAX);
+	}
 };
 
 /**
@@ -272,7 +306,6 @@ class WINDOWSDUALSENSE_DS5W_API UDualSenseLibrary : public UObject, public ISony
 	GENERATED_BODY()
 	
 public:
-	virtual void Disconnect() override;
 	/**
 	 * @brief Configures device settings for a connected device.
 	 *
@@ -286,40 +319,6 @@ public:
 	 */
 	virtual void Settings(const FSettings<FFeatureReport>& Settings) override;
 	virtual void Settings(const FDualSenseFeatureReport& Settings);
-	/**
-	 * @brief Retrieves the platform user ID associated with the current instance.
-	 *
-	 * This method returns the unique platform-specific user identifier
-	 * associated with a particular user. It provides a way to identify
-	 * and differentiate between users on the platform.
-	 *
-	 * @return The platform user ID as an FPlatformUserId object.
-	 */
-	virtual FPlatformUserId GetUserId() override { return DSUserId; }
-	/**
-	 * @brief Associates a platform user ID with the current instance.
-	 *
-	 * This method is used to assign a specific platform user identifier to the instance,
-	 * allowing the instance to manage or track user-specific operations or settings.
-	 *
-	 * It overrides the base class definition to specifically handle the platform user
-	 * assignment for this implementation.
-	 *
-	 * @param User The platform user identifier to associate with the instance.
-	 */
-	virtual void SetUserId(FPlatformUserId User) override { DSUserId = User; }
-	/**
-	 * Retrieves the unique identifier for the input device.
-	 *
-	 * @return The unique identifier associated with the input device.
-	 */
-	virtual FInputDeviceId GetDeviceId() override { return FInputDeviceId::CreateFromInternalId(ControllerID); };
-	/**
-	 * Sets the device ID for the input device.
-	 *
-	 * @param DeviceId The identifier for the input device to be set.
-	 */
-	virtual void SetDeviceId(FInputDeviceId DeviceId) override {};
 	/**
 	 * @brief Initializes the DualSense library with the specified device context.
 	 *
@@ -628,30 +627,6 @@ public:
 	 */
 	void SetLevelBattery(float Level, bool FullyCharged, bool Charging);
 	/**
-	 * @class UDualSenseLibrary
-	 * @brief Provides functionality for interacting with the DualSense controller's advanced features.
-	 *
-	 * The UDualSenseLibrary class contains methods to enable and manage specific hardware features
-	 * of the DualSense controller, such as accelerometer and gyroscope functionality.
-	 */
-	void SetAcceleration(bool bIsAccelerometer);
-	/**
-	 * @brief Sets the state of the gyroscope functionality.
-	 *
-	 * This method enables or disables the gyroscope functionality in the system based on the passed parameter.
-	 *
-	 * @param bIsGyroscope A boolean value indicating whether to enable or disable the gyroscope.
-	 *                     Pass true to enable the gyroscope or false to disable it.
-	 */
-	void SetGyroscope(bool bIsGyroscope);
-	/**
-	 * Sets the touch functionality state for the DualSense controller.
-	 *
-	 * @param bIsTouch Boolean flag indicating whether the touch functionality should be enabled (true) or disabled (false).
-	 */
-	void SetTouch(bool bIsTouch);
-	
-	/**
 	 * Stops any ongoing adaptive trigger effects on the specified controller hand.
 	 *
 	 * @param Hand The hand for which to stop the adaptive trigger effect.
@@ -691,20 +666,6 @@ public:
 	{
 		return HIDDeviceContexts.ConnectionType;	
 	}
-
-	/**
-	 * @brief Retrieves the device path of the connected HID device.
-	 *
-	 * This function overrides the base class implementation to return the specific
-	 * path associated with the current HID device context. The device path typically
-	 * represents a unique identifier or location that can be used to access the device.
-	 *
-	 * @return A string containing the path of the HID device.
-	 */
-	virtual FString GetDevicePath() override
-	{
-		return HIDDeviceContexts.Path;
-	}
 	/**
 	 * @brief Retrieves the type of device associated with the current context.
 	 *
@@ -718,6 +679,51 @@ public:
 	{
 		return HIDDeviceContexts.DeviceType;	
 	}
+	/**
+	 * @brief Enables or disables the touch functionality for the DualSense library.
+	 *
+	 * This method is used to control whether the touch functionality within
+	 * the DualSense controller is active or inactive. When enabled, touch
+	 * inputs will be processed and can be used in the application.
+	 *
+	 * @param bIsTouch A boolean value that determines the touch functionality state.
+	 *                 Set to true to enable touch or false to disable it.
+	 */
+	virtual void EnableTouch(const bool bIsTouch) override;
+	/**
+	 * @brief Enables or disables the motion sensor feature of the DualSense controller.
+	 *
+	 * This function allows the user to toggle the motion sensor functionality of
+	 * the DualSense controller on or off according to their application's requirements.
+	 *
+	 * @param bIsMotionSensor A boolean value that specifies whether the motion sensor should be enabled (true)
+	 * or disabled (false).
+	 */
+	virtual void EnableMotionSensor(bool bIsMotionSensor) override;
+	/**
+	 * @brief Initiates the calibration process for the DualSense motion sensors.
+	 *
+	 * This method starts the calibration routine for the motion sensors in a DualSense controller.
+	 * It collects raw sensor data over the specified duration to determine baseline values and applies
+	 * a dead zone to reduce noise or unintentional drift in sensor readings.
+	 *
+	 * The calibration process allows for improved precision in motion-related computations
+	 * by compensating for sensor drift and other inaccuracies.
+	 *
+	 * @param Duration The duration, in seconds, to collect sensor data for calibration.
+	 *                 Values are clamped between 1.0 and 10.0 seconds.
+	 * @param DeadZone The threshold for sensor dead zone to filter out small motion or drift.
+	 *                 Valid range is from 0.0 to 1.0.
+	 */
+	virtual void StartMotionSensorCalibration(float Duration, float DeadZone) override;
+	/**
+	 * Retrieves the current calibration status of the motion sensors.
+	 *
+	 * @param OutProgress A reference to a float where the current calibration progress will be stored.
+	 *                    The value ranges from 0.0 (no progress) to 1.0 (fully calibrated).
+	 * @return True if the calibration status was successfully retrieved, false otherwise.
+	 */
+	virtual bool GetMotionSensorCalibrationStatus(float& OutProgress) override;
 	/**
 	 * Represents the unique identifier assigned to a specific DualSense controller.
 	 *
@@ -773,7 +779,7 @@ private:
 	 * When set to true, touch input is enabled, allowing the system to respond to touch events.
 	 * When set to false, touch input is disabled, and touch interactions are ignored.
 	 */
-	bool EnableTouch;
+	bool bEnableTouch;
 	/**
 	 * Indicates whether a phone is connected to the system.
 	 *
@@ -813,6 +819,21 @@ private:
 	 */
 	float RightTriggerFeedback;
 	/**
+	 * @variable SensorsDeadZone
+	 * @brief Defines the threshold for ignoring small sensor input variations.
+	 *
+	 * SensorsDeadZone is used to eliminate unintended small variations or noise
+	 * in sensor readings by setting a minimum threshold value. Any input changes
+	 * below this value are considered insignificant and are ignored in further
+	 * processing.
+	 *
+	 * @details This variable is particularly useful for fine-tuning input systems
+	 * to ensure smoother and more reliable sensor-based interactions by reducing
+	 * the sensitivity to unintentional micro-adjustments. It is often applied in
+	 * joystick or motion sensor implementations.
+	 */
+	float SensorsDeadZone = 0.3f;
+	/**
 	 * @variable EnableAccelerometerAndGyroscope
 	 * @brief Flags the activation of accelerometer and gyroscope sensors in the system.
 	 *
@@ -824,7 +845,116 @@ private:
 	 * such as gaming controllers, virtual reality devices, or motion-sensing applications.
 	 * Disabling this may reduce resource usage but will disable motion-based features.
 	 */
-	bool EnableAccelerometerAndGyroscope;
+	bool bEnableAccelerometerAndGyroscope;
+	/**
+	 * @brief Indicates the presence of a motion sensor baseline calibration.
+	 *
+	 * The bHasMotionSensorBaseline variable is used to determine whether
+	 * a baseline calibration has been established for the motion sensor.
+	 * This is important for ensuring reliable readings and performance
+	 * from the motion sensor in applications that depend on accurate
+	 * motion or orientation data.
+	 *
+	 * @details A value of true indicates that a baseline is present, suggesting
+	 * that the motion sensor is calibrated and ready for precise operation.
+	 * A value of false indicates that no baseline calibration exists,
+	 * signaling that calibration might be required or motion sensor
+	 * readings could be unreliable.
+	 */
+	bool bHasMotionSensorBaseline;
+	/**
+	 * @brief Indicates whether the system is currently in the process of calibration.
+	 *
+	 * The bIsCalibrating flag is used to track if a calibration operation is active.
+	 * Calibration procedures are often necessary to ensure accurate performance of
+	 * input devices or sensors, and this property serves as a state indicator during
+	 * such processes.
+	 *
+	 * @details While true, the system may be engaged in activities that adjust
+	 * or fine-tune hardware or software settings based on specific calibration data.
+	 * This information can be used to manage or modify application behavior during
+	 * these operations, ensuring no conflicts arise while calibration is underway.
+	 */
+	bool bIsCalibrating;
+	/**
+	 * @var CalibrationStartTime
+	 * @brief Represents the starting time of a calibration process.
+	 *
+	 * This variable is used to store the timestamp indicating when a calibration
+	 * operation begins. It is typically measured in seconds or another relevant
+	 * time unit and functions as a reference point for tracking the duration
+	 * or progress of the calibration procedure.
+	 *
+	 * @details CalibrationStartTime is essential for systems that require precise
+	 * synchronization or monitoring of calibration events. It provides a time
+	 * reference that can be used to evaluate performance, validate timing,
+	 * or manage system states during the calibration process.
+	 */
+	double CalibrationStartTime;
+	/**
+	 * @variable CalibrationDuration
+	 * @brief Specifies the duration required for a calibration process in the system.
+	 *
+	 * The CalibrationDuration variable represents the amount of time, in seconds,
+	 * allocated for completing the calibration procedure of a specific component or
+	 * system. This value can be used to control timing and ensure proper operation
+	 * during the calibration phase.
+	 *
+	 * @details CalibrationDuration plays a crucial role in determining the time
+	 * limits for calibration workflows. It may be configured based on the requirements
+	 * of the specific hardware or software being calibrated. Proper calibration duration
+	 * is essential to achieve accurate results and optimal performance.
+	 */
+	float CalibrationDuration;
+	/**
+	 * @class AccumulatedGyro
+	 * @brief Represents the accumulated gyroscopic sensor data.
+	 *
+	 * The AccumulatedGyro variable is used to store the cumulative measurements
+	 * from a gyroscope over a period of time. Gyroscopic data typically includes
+	 * angular velocity measurements along the X, Y, and Z axes, allowing for
+	 * tracking of rotational motion.
+	 *
+	 * This variable is commonly used in applications requiring precise angular
+	 * motion tracking or orientation changes, such as in controllers, VR/AR
+	 * systems, or robotics.
+	 *
+	 * @details The data stored in AccumulatedGyro may include the sum of angular
+	 * velocities sampled periodically, providing an aggregate measure of
+	 * rotational movement. Proper handling of noise and sensor calibration is
+	 * recommended to ensure accuracy when interpreting this data.
+	 */
+	FVector AccumulatedGyro;
+	/**
+	 * @class AccumulatedAccel
+	 * @brief Represents the total accumulated acceleration vector.
+	 *
+	 * AccumulatedAccel is a variable intended to store the cumulative acceleration
+	 * values detected over time in the form of a 3D vector. This data is typically
+	 * used to track movement or behavior in applications requiring motion detection
+	 * or spatial calculations.
+	 *
+	 * @details The variable holds acceleration data along the X, Y, and Z axes,
+	 * aggregated over a period. It can be utilized in scenarios such as
+	 * gesture recognition, motion analysis, or input handling in systems that
+	 * rely on accelerometer-based data or similar sensors.
+	 */
+	FVector AccumulatedAccel;
+	/**
+	 * @brief Specifies the number of calibration samples to be collected.
+	 *
+	 * CalibrationSampleCount is an integer variable that determines the quantity of
+	 * samples required for calibration in a given process or system. Increasing or
+	 * decreasing this value directly impacts the precision and accuracy of the calibration
+	 * process, as more samples generally provide more statistically significant data,
+	 * while fewer samples may reduce processing time.
+	 *
+	 * @details This variable is utilized in scenarios where data consistency, error
+	 * adjustment, or parameter tuning is needed for optimal functionality. It plays
+	 * a critical role in applications involving sensors, devices, or systems requiring
+	 * initialization or recalibration during operation.
+	 */
+	int32 CalibrationSampleCount;
 	/**
 	 * @brief Represents the context of a Human Interface Device (HID) used by DualSense controllers.
 	 *
@@ -834,4 +964,35 @@ private:
 	 * initialization, input handling, and managing device-specific settings.
 	 */
 	FDeviceContext HIDDeviceContexts;
+	/**
+	 * @variable GyroBaseline
+	 * @brief Represents the baseline gyroscope values for calibration or adjustment.
+	 *
+	 * The GyroBaseline vector is used to store the initial or default calibration values
+	 * of the gyroscope sensor. These baseline values can be used to correct or offset
+	 * the raw gyroscope data to account for systematic errors or biases in measurements.
+	 *
+	 * @details This variable typically holds three-dimensional vector data, representing
+	 * the x, y, and z axes of the gyroscope readings. By subtracting or adjusting against
+	 * these baseline values, the system can improve the accuracy of motion detection,
+	 * ensuring that small deviations or imperfections in the gyroscope's output are compensated for.
+	 */
+	FVector GyroBaseline;
+	/**
+	 * @variable AccelBaseline
+	 * @brief Represents the baseline accelerometer values for calibration or reference purposes.
+	 *
+	 * The AccelBaseline variable is used to store the baseline or default accelerometer readings
+	 * that can serve as a reference point for motion detection or comparison. It is typically
+	 * initialized during a calibration phase and helps in determining deviations or changes in
+	 * the accelerometer data during device movement.
+	 *
+	 * @details This variable generally consists of three components corresponding to the x, y,
+	 * and z axes of acceleration. It is useful in systems that involve sensor input for motion
+	 * tracking, providing a stable reference to identify movement patterns or biases in the
+	 * accelerometer measurements.
+	 */
+	FVector AccelBaseline;
+
+	FSensorBounds Bounds;
 };

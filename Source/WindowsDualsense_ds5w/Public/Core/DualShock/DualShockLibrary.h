@@ -20,7 +20,6 @@ class WINDOWSDUALSENSE_DS5W_API UDualShockLibrary : public UObject, public ISony
 	GENERATED_BODY()
 
 public:
-	virtual void Disconnect() override;
 	/**
 	 * @brief Configures device settings for a connected device.
 	 *
@@ -34,40 +33,6 @@ public:
 	 */
 	virtual void Settings(const FSettings<FFeatureReport>& Settings) override;
 	virtual void Settings(const FDualShockFeatureReport& Settings);
-	/**
-	 * @brief Retrieves the platform user ID associated with the current instance.
-	 *
-	 * This method returns the unique platform-specific user identifier
-	 * associated with a particular user. It provides a way to identify
-	 * and differentiate between users on the platform.
-	 *
-	 * @return The platform user ID as an FPlatformUserId object.
-	 */
-	virtual FPlatformUserId GetUserId() override { return DSUserId; }
-	/**
-	 * @brief Associates a platform user ID with the current instance.
-	 *
-	 * This method is used to assign a specific platform user identifier to the instance,
-	 * allowing the instance to manage or track user-specific operations or settings.
-	 *
-	 * It overrides the base class definition to specifically handle the platform user
-	 * assignment for this implementation.
-	 *
-	 * @param User The platform user identifier to associate with the instance.
-	 */
-	virtual void SetUserId(FPlatformUserId User) override { DSUserId = User; }
-	/**
-	 * Retrieves the unique identifier for the input device.
-	 *
-	 * @return The unique identifier associated with the input device.
-	 */
-	virtual FInputDeviceId GetDeviceId() override { return FInputDeviceId::CreateFromInternalId(ControllerID); };
-	/**
-	 * Sets the device ID for the input device.
-	 *
-	 * @param DeviceId The identifier for the input device to be set.
-	 */
-	virtual void SetDeviceId(FInputDeviceId DeviceId) override {};
 	/**
 	 * @brief Initializes the DualSense library with the specified device context.
 	 *
@@ -149,11 +114,6 @@ public:
 	 */
 	virtual void UpdateInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
 	                         const FPlatformUserId UserId, const FInputDeviceId InputDeviceId) override;
-
-	virtual FString GetDevicePath() override
-	{
-		return HIDDeviceContexts.Path;
-	}
 	/**
 	 * Retrieves the current battery level of the DualSense controller.
 	 *
@@ -182,23 +142,6 @@ public:
 	 * @param Led The desired state of the microphone LED, represented by ELedMicEnum.
 	 */
 	virtual void SetMicrophoneLed(ELedMicEnum Led) override;
-	/**
-	 * Sets the touch state for the device.
-	 *
-	 * @param bIsTouch A boolean indicating whether touch input is enabled (true) or disabled (false).
-	 */
-	virtual void SetTouch(const bool bIsTouch) override;
-	/**
-	 * Sets the acceleration mode for the gamepad.
-	 *
-	 * @param bIsAccelerometer If true, enables accelerometer-based input; otherwise, disables it.
-	 */
-	virtual void SetAcceleration(bool bIsAccelerometer) override;
-	/**
-	 * Enables or disables the gyroscope functionality in the gamepad.
-	 * @param bIsGyroscope Indicates whether the gyroscope should be enabled (true) or disabled (false).
-	 */
-	virtual void SetGyroscope(bool bIsGyroscope) override;
 	/**
 	 * Stops all currently active operations or actions associated with the interface.
 	 * This method must be implemented by any derived class to handle the termination
@@ -254,6 +197,38 @@ public:
 		return HIDDeviceContexts.DeviceType;	
 	}
 	/**
+	 * Sets the touch state for the device.
+	 *
+	 * @param bIsTouch A boolean indicating whether touch input is enabled (true) or disabled (false).
+	 */
+	virtual void EnableTouch(const bool bIsTouch) override;
+	/**
+	 * Enables the motion sensor functionality of the gamepad.
+	 *
+	 * @param bIsMotionSensor Specifies whether to enable the gyroscope (true) or accelerometer (false) as the motion sensor.
+	 */
+	virtual void EnableMotionSensor(bool bIsMotionSensor) override;
+	/**
+	 * @brief Initiates the calibration process for the motion sensor.
+	 *
+	 * This method triggers the calibration sequence for the motion sensor
+	 * to improve its accuracy and responsiveness. Calibration adjusts for
+	 * external factors and ensures stable performance of the sensor.
+	 *
+	 * @param Duration The duration of the calibration process in seconds.
+	 * @param DeadZone The threshold value to filter minor unintended movements
+	 * during calibration.
+	 */
+	virtual void StartMotionSensorCalibration(float Duration, float DeadZone) override {}
+	/**
+	 * Retrieves the current calibration status of the motion sensors.
+	 *
+	 * @param OutProgress A reference to a float where the current calibration progress will be stored.
+	 *                    The value ranges from 0.0 (no progress) to 1.0 (fully calibrated).
+	 * @return True if the calibration status was successfully retrieved, false otherwise.
+	 */
+	virtual bool GetMotionSensorCalibrationStatus(float& OutProgress) override {return false;}
+	/**
 	 * Represents the unique identifier assigned to a specific DualSense controller.
 	 *
 	 * This variable is used to differentiate connected DualSense controllers, enabling the system
@@ -298,7 +273,6 @@ protected:
 	 */
 	static FGenericPlatformInputDeviceMapper PlatformInputDeviceMapper;
 private:
-	FPlatformUserId DSUserId;
 	/**
 	 * @brief Represents the current battery level of a device.
 	 *
@@ -313,7 +287,7 @@ private:
 	 * When set to true, touch input is enabled, allowing the system to respond to touch events.
 	 * When set to false, touch input is disabled, and touch interactions are ignored.
 	 */
-	bool EnableTouch;
+	bool bEnableTouch;
 	/**
 	 * @variable EnableAccelerometerAndGyroscope
 	 * @brief Flags the activation of accelerometer and gyroscope sensors in the system.
