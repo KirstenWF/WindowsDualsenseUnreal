@@ -23,6 +23,13 @@ Integre todos os recursos do controle DualSense™ e DualShock 4® da Sony no se
 <img src="https://img.shields.io/badge/Platform-Windows-blue?style=for-the-badge&logo=windows" alt="Platform: Windows">
 </p>
 
+## Aviso Legal e Marcas Registradas
+
+"PlayStation", "PlayStation Family Mark", "PS5 logo", "PS5", "DualSense" e "DUALSHOCK" são marcas registradas ou marcas comerciais da Sony Interactive Entertainment Inc. "SONY" é uma marca registrada da Sony Corporation.
+"Windows" é uma marca registrada da Microsoft Corporation.
+
+O autor deste projeto não é afiliado, associado, autorizado ou de qualquer forma oficialmente conectado com a Sony Interactive Entertainment Inc. ou com a Microsoft Corporation. Este é um projeto independente e não oficial.
+
 ## 📖 Sobre o Projeto
 
 Este é um plugin para a Unreal Engine que permite a comunicação nativa com os controles DualSense™ (PlayStation 5) e DualShock 4® (PlayStation 4) em sistemas Windows. Ele expõe as funcionalidades únicas de cada controle, como o Feedback Háptico e os Gatilhos Adaptáveis do DualSense, através de uma biblioteca de funções de Blueprint e C++ fácil de usar.
