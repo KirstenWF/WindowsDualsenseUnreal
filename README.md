@@ -24,6 +24,13 @@ Integrate all the features of Sony's DualSense™ and DualShock 4® controllers 
 <img src="https://img.shields.io/badge/Platform-Windows-blue?style=for-the-badge&logo=windows" alt="Platform: Windows">
 </p>
 
+## Disclaimer and Trademarks
+
+"PlayStation", "PlayStation Family Mark", "PS5 logo", "PS5", "DualSense" and "DUALSHOCK" are registered trademarks or trademarks of Sony Interactive Entertainment Inc. "SONY" is a registered trademark of Sony Corporation.
+"Windows" is a registered trademark of Microsoft Corporation.
+
+The author of this project is not affiliated, associated, authorized, endorsed by, or in any way officially connected with Sony Interactive Entertainment Inc. or Microsoft Corporation. This is an independent and unofficial project.
+
 ## 📖 About the Project
 
 This is an Unreal Engine plugin that enables native communication with DualSense™ (PlayStation 5) and DualShock 4® (PlayStation 4) controllers on Windows systems. It exposes the unique features of each controller, such as Haptic Feedback and Adaptive Triggers of DualSense, through an easy-to-use Blueprint and C++ function library.
@@ -159,8 +166,3 @@ A special thanks as well to the Epic Games team for creating and providing the *
 * [DualSenseAPI](https://github.com/BadMagic100/DualSenseAPI/tree/master)
 * [flok pydualsense](https://github.com/flok/pydualsense)
 
-"PlayStation", "PlayStation Family Mark", "PS5 logo", "PS5", "DualSense" and "DUALSHOCK" are registered trademarks or trademarks of Sony Interactive Entertainment Inc. "SONY" is a registered trademark of Sony Corporation.
-
-"Windows" is a registered trademark of Microsoft Corporation.
-
-The Author is not affiliated in any kind with Sony Interactive Entertainment Inc.! The Author is not affiliated in any kind with Microsoft Corporation!
