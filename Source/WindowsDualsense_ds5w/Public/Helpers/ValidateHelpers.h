@@ -32,7 +32,7 @@ public:
 	 * @param Position The position value to validate.
 	 * @return True if the position is within the valid range, false otherwise.
 	 */
-	static bool ValidateMaxPosition(const int32 Position);
+	static bool ValidateMaxPosition(const int32 Positio, const int32 MaxPosition = 8, const int32 MinPosition = 1);
 
 	/**
 	 * Validates if the given frequency value is within the allowable range.
@@ -76,7 +76,69 @@ public:
 		{
 			HexString += FString::Printf(TEXT("%02X "), Buffer[i]);
 		}
-		
+
 		UE_LOG(LogTemp, Log, TEXT("Buffer Device: %s String: %s"), *Device, *HexString);
+	}
+
+	/**
+	 * Parses a string containing a hexadecimal value and converts it to a byte.
+	 *
+	 * This method processes the input string, removing a potential "0x" prefix,
+	 * and validates that the string contains valid hexadecimal characters and fits
+	 * within a single byte. If the input is valid, the method updates the output
+	 * byte parameter and returns true; otherwise, it returns false.
+	 *
+	 * @param Token The input string potentially containing a hexadecimal value.
+	 * @param OutByte Reference to an unsigned 8-bit integer that will store the parsed byte value.
+	 * @return True if the string was successfully parsed into a valid byte; false otherwise.
+	 */
+	static bool ParseHexByte_Local(const FString& Token, uint8& OutByte)
+	{
+		FString S = Token.TrimStartAndEnd();
+		if (S.StartsWith(TEXT("0x"), ESearchCase::IgnoreCase))
+		{
+			S.RightChopInline(2);
+		}
+		if (S.IsEmpty())
+		{
+			OutByte = 0;
+			return false;
+		}
+		for (int32 i = 0; i < S.Len(); ++i)
+		{
+			TCHAR C = S[i];
+			if (!((C >= '0' && C <= '9') || (C >= 'a' && C <= 'f') || (C >= 'A' && C <= 'F')))
+			{
+				OutByte = 0;
+				return false;
+			}
+		}
+		// Only allow 1-2 hex chars per token after optional 0x prefix
+		if (S.Len() < 1 || S.Len() > 2)
+		{
+			OutByte = 0;
+			return false;
+		}
+		int32 Value = 0;
+		for (int32 i = 0; i < S.Len(); ++i)
+		{
+			TCHAR C = S[i];
+			int32 Nibble = 0;
+			if (C >= '0' && C <= '9')
+			{
+				Nibble = C - '0';
+			}
+			else if (C >= 'a' && C <= 'f')
+			{
+				Nibble = 10 + (C - 'a');
+			}
+			else if (C >= 'A' && C <= 'F')
+			{
+				Nibble = 10 + (C - 'A');
+			}
+			Value = (Value << 4) | (Nibble & 0xF);
+		}
+		OutByte = static_cast<uint8>(Value & 0xFF);
+		return true;
 	}
 };

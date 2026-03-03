@@ -2,31 +2,86 @@
 // Created for: WindowsDualsense_ds5w - Plugin to support DualSense controller on Windows.
 // Planned Release Year: 2025
 
-
 #include "WindowsDualsense_ds5w/Public/WindowsDualsense_ds5w.h"
+#include "API/SonyGamepadProxyHelpers.h"
+#include "GCore/Interfaces/IPlatformHardwareInfo.h"
+#include "Helpers/DualSenseLog.h"
+#include "Implementations/Adapters/DeviceRegistry.h"
+#include "Implementations/Platforms/Commons/LinuxHardwarePolicy.h"
+#include "Implementations/Platforms/Windows/WindowsHardwarePolicy.h"
 
+#if PLATFORM_LINUX || PLATFORM_MAC
+#include "Framework/Application/SlateApplication.h"
+#include "SDL.h"
+#include "Subsystems/SonyInputProcessor.h"
+#endif
+#include "DeviceManager.h"
 #include "InputCoreTypes.h"
 #include "Misc/Paths.h"
-#include "DeviceManager.h"
-#include "Microsoft/AllowMicrosoftPlatformTypes.h"
-#include <stdio.h>
 
 #define LOCTEXT_NAMESPACE "FWindowsDualsense_ds5wModule"
 
 void FWindowsDualsense_ds5wModule::StartupModule()
 {
-	IModularFeatures::Get().RegisterModularFeature(IInputDeviceModule::GetModularFeatureName(), this);
+	IModularFeatures::Get().RegisterModularFeature(GetModularFeatureName(), this);
 	RegisterCustomKeys();
+
+#if PLATFORM_WINDOWS
+	// Initialize PlatformHardware, (e.g., FLinuxHardware FWindowsHardware FMacHardware, FSonyHardware)
+	std::unique_ptr<IPlatformHardwareInfo> WindowsInstance = std::make_unique<FWindowsPlatform::FWindowsHardware>();
+	IPlatformHardwareInfo::SetInstance(std::move(WindowsInstance));
+
+	// Initialize FDeviceRegistry
+	FDeviceRegistry::Initialize();
+
+#elif PLATFORM_LINUX || PLATFORM_MAC
+	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER) != 0)
+	{
+		UE_LOG(LogDualSense, Error, TEXT("Failed to initialize subsystems of SDL: %s"), UTF8_TO_TCHAR(SDL_GetError()));
+	}
+
+	if (FSlateApplication::IsInitialized())
+	{
+		TSharedPtr<FSonyInputProcessor> SonyInputProcessor = MakeShared<FSonyInputProcessor>();
+		FSlateApplication::Get().RegisterInputPreProcessor(SonyInputProcessor);
+	}
+
+	// Initialize PlatformHardware, (e.g., FLinuxHardware FWindowsHardware FMacHardware, FSonyHardware)
+	std::unique_ptr<IPlatformHardwareInfo> LinuxInstance = std::make_unique<FLinuxPlatform::FLinuxHardware>();
+	IPlatformHardwareInfo::SetInstance(std::move(LinuxInstance));
+
+	FDeviceRegistry::Initialize();
+#endif
 }
 
 void FWindowsDualsense_ds5wModule::ShutdownModule()
 {
+#if PLATFORM_LINUX || PLATFORM_MAC
+	SDL_Quit();
+
+	if (FSlateApplication::IsInitialized())
+	{
+		FSlateApplication::Get().UnregisterInputPreProcessor(SonyInputProcessor);
+	}
+#endif
 }
 
+FWindowsDualsense_ds5wModule::FCustomInputDeviceFactory FWindowsDualsense_ds5wModule::CustomInputDeviceFactory = nullptr;
+
 TSharedPtr<IInputDevice> FWindowsDualsense_ds5wModule::CreateInputDevice(
-	const TSharedRef<FGenericApplicationMessageHandler>& InCustomMessageHandler)
+    const TSharedRef<FGenericApplicationMessageHandler>& InCustomMessageHandler)
 {
-	return MakeShareable(new DeviceManager(InCustomMessageHandler, false));
+	if (CustomInputDeviceFactory)
+	{
+		return CustomInputDeviceFactory(InCustomMessageHandler);
+	}
+
+	return MakeShareable(new DeviceManager(InCustomMessageHandler));
+}
+
+void FWindowsDualsense_ds5wModule::SetCustomInputDeviceFactory(FCustomInputDeviceFactory Factory)
+{
+	CustomInputDeviceFactory = Factory;
 }
 
 void FWindowsDualsense_ds5wModule::RegisterCustomKeys()
@@ -44,70 +99,59 @@ void FWindowsDualsense_ds5wModule::RegisterCustomKeys()
 	const FKey PS_PaddleR("PS_PaddleR");
 
 	EKeys::AddKey(FKeyDetails(
-		PS_FunctionL,
-		FText::FromString("PlayStation Left Function Button"),
-		FKeyDetails::GamepadKey
-	));
+	    PS_FunctionL,
+	    FText::FromString("PlayStation Left Function Button"),
+	    FKeyDetails::GamepadKey));
 
 	EKeys::AddKey(FKeyDetails(
-		PS_FunctionR,
-		FText::FromString("PlayStation Right Function Button"),
-		FKeyDetails::GamepadKey
-	));
+	    PS_FunctionR,
+	    FText::FromString("PlayStation Right Function Button"),
+	    FKeyDetails::GamepadKey));
 
 	EKeys::AddKey(FKeyDetails(
-		PS_PaddleL,
-		FText::FromString("PlayStation Left Paddle"),
-		FKeyDetails::GamepadKey
-	));
+	    PS_PaddleL,
+	    FText::FromString("PlayStation Left Paddle"),
+	    FKeyDetails::GamepadKey));
 
 	EKeys::AddKey(FKeyDetails(
-		PS_PaddleR,
-		FText::FromString("PlayStation Right Paddle"),
-		FKeyDetails::GamepadKey
-	));
+	    PS_PaddleR,
+	    FText::FromString("PlayStation Right Paddle"),
+	    FKeyDetails::GamepadKey));
 
 	EKeys::AddKey(FKeyDetails(
-		PS_PushLeftStick,
-		FText::FromString("PlayStation Left Thumbstick Button"),
-		FKeyDetails::GamepadKey
-	));
+	    PS_PushLeftStick,
+	    FText::FromString("PlayStation Left Thumbstick Button"),
+	    FKeyDetails::GamepadKey));
 
 	EKeys::AddKey(FKeyDetails(
-		PS_PushRightStick,
-		FText::FromString("PlayStation Right Thumbstick Button"),
-		FKeyDetails::GamepadKey
-	));
+	    PS_PushRightStick,
+	    FText::FromString("PlayStation Right Thumbstick Button"),
+	    FKeyDetails::GamepadKey));
 
 	EKeys::AddKey(FKeyDetails(
-		Shared,
-		FText::FromString("PlayStation Share"),
-		FKeyDetails::GamepadKey
-	));
+	    Shared,
+	    FText::FromString("PlayStation Share"),
+	    FKeyDetails::GamepadKey));
 
 	EKeys::AddKey(FKeyDetails(
-		Menu,
-		FText::FromString("PlayStation Menu"),
-		FKeyDetails::GamepadKey
-	));
+	    Menu,
+	    FText::FromString("PlayStation Menu"),
+	    FKeyDetails::GamepadKey));
 
 	EKeys::AddKey(FKeyDetails(
-		PlayStationButton,
-		FText::FromString("PlayStation Button"),
-		FKeyDetails::GamepadKey
-	));
+	    PlayStationButton,
+	    FText::FromString("PlayStation Button"),
+	    FKeyDetails::GamepadKey));
 
 	EKeys::AddKey(FKeyDetails(
-		Mic,
-		FText::FromString("PlayStation Mic"),
-		FKeyDetails::GamepadKey
-	));
+	    Mic,
+	    FText::FromString("PlayStation Mic"),
+	    FKeyDetails::GamepadKey));
 
 	EKeys::AddKey(FKeyDetails(
-		TouchButtom,
-		FText::FromString("PlayStation Touchpad Button"),
-		FKeyDetails::GamepadKey
-	));
+	    TouchButtom,
+	    FText::FromString("PlayStation Touchpad Button"),
+	    FKeyDetails::GamepadKey));
 }
 
 IMPLEMENT_MODULE(FWindowsDualsense_ds5wModule, WindowsDualsense_ds5w)

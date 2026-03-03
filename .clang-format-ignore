@@ -1,0 +1,10 @@
+﻿# ... existing code ...
+# External Libraries
+miniaudio.h
+miniaudio_impl.cpp
+Libs/
+
+# Binary data and Datasets
+*.wav
+*.bin
+Datasets/
