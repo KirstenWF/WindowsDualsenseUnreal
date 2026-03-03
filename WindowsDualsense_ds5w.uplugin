@@ -13,7 +13,7 @@
   "CanContainContent": false,
   "IsBetaVersion": false,
   "Installed": false,
-  "EnabledByDefault": true,
+  "EnabledByDefault": false,
   "RequiresBuildPlatform": true,
   "EngineVersions": [
     "5.2",
